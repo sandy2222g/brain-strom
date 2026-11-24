@@ -64,3 +64,19 @@ def test_api():
     assert r["best"]["row"] == 4 and r["map"][4] == "XX.OOO..XX"
     assert c.get("/").status_code == 200
     assert c.post("/pick", json={"rows": ["..", "."], "party": 1}).status_code == 422
+
+
+def test_index_has_error_text():
+    assert "Could not find seats" in c.get("/").text
+
+
+def test_seat_map_is_labelled():
+    assert 'aria-label="Seat map, best block highlighted"' in c.get("/").text
+
+
+def test_caption_is_live():
+    assert 'id="cap" role="status"' in c.get("/").text
+
+
+def test_index_has_dark_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text
