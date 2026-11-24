@@ -59,3 +59,19 @@ def test_api():
     assert j["chars"] == 11 and j["bits_per_char"] >= j["entropy"]
     assert c.post("/analyse", json={"text": ""}).status_code == 422
     assert len(c.get("/samples").json()["samples"]) == 3 and c.get("/").status_code == 200
+
+
+def test_index_has_squeeze_error_text():
+    assert "Could not squeeze the text" in c.get("/").text
+
+
+def test_index_has_samples_error_text():
+    assert "Sample texts are unavailable right now" in c.get("/").text
+
+
+def test_index_announces_result():
+    assert 'id="msg" role="status"' in c.get("/").text
+
+
+def test_index_has_dark_colour_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text
