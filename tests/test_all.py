@@ -77,3 +77,19 @@ def test_api():
     assert c.get("/metrics").json()["test"] == 48
     assert c.post("/estimate", json={"area_m2": 5, "bedrooms": 2, "distance_km": 4, "age_years": 10}).status_code == 422
     assert c.get("/").status_code == 200
+
+
+def test_index_has_estimate_error_text():
+    assert "Could not estimate the rent" in c.get("/").text
+
+
+def test_index_has_metrics_error_text():
+    assert "Accuracy figures unavailable right now" in c.get("/").text
+
+
+def test_index_announces_estimate():
+    assert 'id="p" role="status"' in c.get("/").text
+
+
+def test_index_has_dark_colour_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text
