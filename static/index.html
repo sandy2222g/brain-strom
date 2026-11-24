@@ -1,30 +1,125 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lift Week</title>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lift Week</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f2f2ee;--ink:#111;--acid:#c6f432;--mute:#555;--card:#fff}
-@media(prefers-color-scheme:dark){:root{--bg:#0e0e0e;--ink:#f2f2ee;--acid:#c6f432;--mute:#a2a29a;--card:#1a1a1a}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Barlow,sans-serif}
-main{max-width:1040px;margin:auto;padding:24px 16px 56px}h1{font:clamp(2.4rem,9vw,4.6rem)/.95 "Archivo Black";text-transform:uppercase;margin:0}h1 mark{background:var(--acid);color:#111;padding:0 8px}
-.sub{color:var(--mute);margin:8px 0 20px}.ctl{display:flex;flex-wrap:wrap;gap:16px;align-items:end;margin-bottom:16px}label{display:grid;gap:4px;font-weight:600;font-size:.85rem;text-transform:uppercase}
-select,input[type=number]{min-height:44px;padding:0 10px;font:inherit;background:var(--card);color:var(--ink);border:2px solid var(--ink)}
-.ex{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}.ex label{flex-direction:row;display:flex;gap:6px;align-items:center;min-height:44px;padding:0 12px;border:2px solid var(--ink);background:var(--card);text-transform:none;font-size:.9rem;cursor:pointer;transition:transform 150ms}.ex label:hover{transform:translateY(-2px)}
-input[type=checkbox]{accent-color:#111;width:16px;height:16px}:focus-visible{outline:3px solid var(--acid);outline-offset:2px}
-.week{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:10px;animation:in .3s}@keyframes in{from{opacity:0;transform:translateY(6px)}}
-.day{border:2px solid var(--ink);background:var(--card);min-height:170px;padding:10px}.day b{display:block;font:1.3rem "Archivo Black";text-transform:uppercase}.day.on b{background:var(--acid);color:#111;padding:0 6px;display:inline-block}
-.day .t{color:var(--mute);font-size:.8rem;margin-bottom:6px}.day div.e{padding:3px 0;border-bottom:1px solid var(--mute);font-size:.9rem}.rest{color:var(--mute);margin-top:30px}
-.msg{margin-top:14px;font-weight:600}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-</style></head><body><main>
-<h1>Lift <mark>Week</mark></h1><p class="sub">Pick lifts, days and time. The planner avoids training the same muscle in back-to-back sessions and counts any clash.</p>
-<div class="ctl"><label>Days<select id="d"><option>2</option><option>3</option><option selected>4</option><option>5</option></select></label><label>Minutes per session<input type="number" id="m" value="45" min="10" max="180"></label></div>
-<div class="ex" id="ex" role="group" aria-label="Exercises"></div>
-<div class="week" id="w" aria-live="polite"></div><p class="msg" id="msg"></p></main>
+:root{
+  --paper:#f7f4fb;--panel:#ffffff;--ink:#221f3a;--mute:#6b6786;--rule:#dcd7ee;
+  --accent:#4b3fcf;--accent-ink:#ffffff;--coral:#ff7a59;--track:#ece9f7;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#14122a;--panel:#1e1b3a;--ink:#ece9ff;--mute:#a7a2c9;--rule:#36315e;
+    --accent:#9d92ff;--accent-ink:#14122a;--coral:#ff9c84;--track:#2a2650;
+  }
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;min-height:100vh;background:var(--paper);color:var(--ink);font:16px/1.5 "DM Sans",system-ui,sans-serif;padding:16px}
+main{max-width:880px;margin:0 auto}
+header{padding:10px 0 4px}
+h1{font:700 clamp(2rem,7vw,2.9rem)/1.05 Sora,system-ui,sans-serif;margin:0;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--accent)}
+.sub{color:var(--mute);margin:8px 0 0;max-width:58ch}
+h2{font:700 .8rem Sora,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.12em;color:var(--mute);margin:0 0 8px}
+section{margin-top:20px}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:16px;padding:14px 16px}
+.ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+label.f{display:grid;gap:6px;font-size:.9rem;font-weight:500;color:var(--mute)}
+select,input[type=number]{min-height:44px;padding:0 12px;font:inherit;font-size:1rem;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border:1px solid var(--rule);border-radius:999px;background:var(--panel);font-size:.92rem;cursor:pointer;user-select:none}
+.chip:has(input:checked){background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip input{accent-color:var(--accent-ink);width:15px;height:15px;margin:0}
+.agenda{display:grid;gap:8px}
+.row{display:grid;grid-template-columns:86px minmax(0,1fr);gap:14px;align-items:stretch;background:var(--panel);border:1px solid var(--rule);border-radius:14px;padding:12px 14px}
+.row.rest{opacity:.6}
+.dayname{font:700 1.1rem Sora,system-ui,sans-serif}
+.dayname small{display:block;font:500 .8rem "DM Sans",sans-serif;color:var(--mute)}
+.meter{height:6px;border-radius:99px;background:var(--track);overflow:hidden;margin:4px 0 8px}
+.meter i{display:block;height:100%;background:var(--coral);border-radius:99px}
+.lifts{display:flex;flex-wrap:wrap;gap:6px}
+.lift{font-size:.88rem;padding:4px 10px;border-radius:8px;background:var(--track)}
+.restnote{color:var(--mute);font-size:.92rem;align-self:center}
+.msg{margin:14px 0 0;padding:10px 14px;border-radius:12px;background:var(--panel);border-left:4px solid var(--accent);font-size:.95rem}
+:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
+@media (max-width:480px){
+  .row{grid-template-columns:1fr;gap:6px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Lift <em>Week</em></h1>
+    <p class="sub">Pick lifts, days and time. The planner avoids training the same muscle in back-to-back sessions and counts any clash.</p>
+  </header>
+
+  <section aria-label="Settings">
+    <div class="panel ctl">
+      <label class="f">Days
+        <select id="d">
+          <option>2</option><option>3</option><option selected>4</option><option>5</option>
+        </select>
+      </label>
+      <label class="f">Minutes per session
+        <input type="number" id="m" value="45" min="10" max="180">
+      </label>
+    </div>
+  </section>
+
+  <section aria-label="Exercises">
+    <h2>Lifts</h2>
+    <div class="chips" id="ex" role="group" aria-label="Exercises"></div>
+  </section>
+
+  <section aria-label="Week">
+    <h2>Week</h2>
+    <div class="agenda" id="w" aria-live="polite"></div>
+    <p class="msg" id="msg"></p>
+  </section>
+</main>
 <script>
-const $=i=>document.getElementById(i),D=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-async function init(){const l=await (await fetch("/exercises")).json();$("ex").innerHTML=l.map(e=>`<label><input type="checkbox" value="${e.name}" checked>${e.name}</label>`).join("");
-document.querySelectorAll("input").forEach(e=>e.onchange=go);$("d").onchange=go;go()}
-async function go(){const sel=[...document.querySelectorAll(".ex input:checked")].map(e=>e.value);if(!sel.length){$("w").innerHTML="";$("msg").textContent="Pick at least one lift.";return}
-const r=await fetch("/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({exercises:sel,days:+$("d").value,minutes_per_day:+$("m").value})});const d=await r.json();if(!r.ok){$("msg").textContent=d.detail;return}
-$("w").innerHTML=D.map(x=>{const v=d.week[x];return v?`<div class="day on"><b>${x}</b><div class="t">${d.minutes[x]} min</div>${v.map(n=>`<div class="e">${n}</div>`).join("")}</div>`:`<div class="day"><b>${x}</b><div class="rest">Rest</div></div>`}).join("");
-$("msg").textContent=d.unplaced.length?`Did not fit: ${d.unplaced.join(", ")}`:`Recovery clashes: ${d.recovery_clashes}`}
+const $ = i => document.getElementById(i);
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+async function init() {
+  const l = await (await fetch("/exercises")).json();
+  $("ex").innerHTML = l.map(e => `<label class="chip"><input type="checkbox" value="${e.name}" checked>${e.name}</label>`).join("");
+  document.querySelectorAll("input").forEach(e => e.onchange = go);
+  $("d").onchange = go;
+  go();
+}
+
+async function go() {
+  const sel = [...document.querySelectorAll(".chip input:checked")].map(e => e.value);
+  if (!sel.length) { $("w").innerHTML = ""; $("msg").textContent = "Pick at least one lift."; return; }
+  const budget = +$("m").value;
+  const r = await fetch("/plan", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({exercises: sel, days: +$("d").value, minutes_per_day: budget}),
+  });
+  const d = await r.json();
+  if (!r.ok) { $("msg").textContent = d.detail; return; }
+  $("w").innerHTML = DAYS.map(x => {
+    const v = d.week[x];
+    if (!v) return `<div class="row rest"><div class="dayname">${x}<small>rest</small></div><div class="restnote">No session planned.</div></div>`;
+    const pct = Math.min(100, Math.round(d.minutes[x] / budget * 100));
+    return `<div class="row"><div class="dayname">${x}<small>${d.minutes[x]} of ${budget} min</small></div>`
+      + `<div><div class="meter" aria-hidden="true"><i style="width:${pct}%"></i></div>`
+      + `<div class="lifts">${v.map(n => `<span class="lift">${n}</span>`).join("")}</div></div></div>`;
+  }).join("");
+  $("msg").textContent = d.unplaced.length
+    ? `Did not fit: ${d.unplaced.join(", ")}`
+    : `Recovery clashes: ${d.recovery_clashes}`;
+}
+
 init();
-</script></body></html>
+</script>
+</body>
+</html>
