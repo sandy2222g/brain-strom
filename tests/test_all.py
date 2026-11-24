@@ -94,3 +94,7 @@ def test_api_validation():
 def test_index_has_pack_error_text():
     assert "Could not pack the boxes" in c.get("/").text
     assert "if(!R)return" in c.get("/").text
+
+
+def test_dark_header_subtitle_contrast_rule():
+    assert "header p{opacity:1}" in c.get("/").text
