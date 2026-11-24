@@ -83,3 +83,11 @@ def test_api():
     assert r["best"]["total"] == 70.07
     assert c.get("/").status_code == 200
     assert c.post("/choose", json={"subtotal": -5, "shipping": 0, "coupons": []}).status_code == 422
+
+
+def test_index_has_error_texts_live_region_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not work out the best coupons" in page
+    assert "Could not load the sample cart" in page
+    assert 'id="r" role="status"' in page
+    assert "prefers-color-scheme: dark" in page
