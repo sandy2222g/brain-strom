@@ -69,3 +69,15 @@ def test_api():
     assert r["plan"]["on_time_count"] == 6 and r["listed_on_time"] == 2 and r["shortest_on_time"] == 5
     assert c.get("/").status_code == 200
     assert c.post("/plan", json={"tasks": []}).status_code == 422
+
+
+def test_index_has_plan_error_text():
+    assert "Could not plan the homework" in c.get("/").text
+
+
+def test_index_announces_summary():
+    assert 'id="sum" role="status"' in c.get("/").text
+
+
+def test_index_has_dark_colour_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text

@@ -11,14 +11,15 @@ h1{margin:0 0 4px;font-size:1.7rem;line-height:40px}p{margin:0;color:var(--mute)
 ol{margin:18px 0 0;padding:0;list-style:none}li{display:flex;justify-content:space-between}
 li.late{color:var(--late);text-decoration:line-through}.t{font-size:.9rem;color:var(--mute)}li.late .t{color:var(--late)}
 .sum{margin-top:18px;font-size:.95rem}
+@media (prefers-color-scheme: dark){:root{--paper:#1b2430;--line:#2b3a4d;--margin:#8a5656;--ink:#dbe6ff;--mute:#9aa9c4;--late:#ff8a80}body{background:#11161d}}
 </style></head><body><main>
 <h1>Homework order</h1><p>Most assignments finished on time.</p>
-<ol id="out"></ol><div class="sum" id="sum"></div></main>
+<ol id="out"></ol><div class="sum" id="sum" role="status"></div></main>
 <script>
-(async()=>{
+(async()=>{try{
   const s=await (await fetch("/sample")).json();
   const r=await (await fetch("/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tasks:s.tasks})})).json();
   document.getElementById("out").innerHTML=r.plan.schedule.map((x,i)=>`<li class="${x.on_time?"":"late"}"><span>${i+1}. ${x.name}</span><span class="t">done at ${x.finish}h · due ${x.due}h</span></li>`).join("");
   document.getElementById("sum").textContent=`${r.plan.on_time_count} of ${r.plan.schedule.length} on time. Listed order: ${r.listed_on_time}. Shortest first: ${r.shortest_on_time}.`;
-})();
+}catch(e){document.getElementById("sum").textContent="Could not plan the homework. Refresh to try again.";document.getElementById("out").innerHTML="";}})();
 </script></body></html>
