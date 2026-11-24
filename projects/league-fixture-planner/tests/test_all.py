@@ -82,3 +82,9 @@ def test_api():
 
 def test_api_validation():
     assert c.post("/schedule", json={"teams": ["only"]}).status_code == 422
+
+
+def test_index_has_error_text_and_light_amber():
+    page = c.get("/").text
+    assert "Could not build the fixtures" in page
+    assert "--amber:#9a4f00" in page
