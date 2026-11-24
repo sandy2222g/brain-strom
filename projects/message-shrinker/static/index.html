@@ -14,14 +14,14 @@ textarea{width:100%;height:110px;font:inherit;background:#082a66;color:var(--ink
 .ok{color:#8dffa8}.m{font-size:12px;color:var(--mut);margin-top:12px}
 </style></head><body><main>
 <h1>Message <span>Shrinker</span></h1><p class="s">Huffman coding: common letters get short codes, rare letters get long ones. Type anything.</p>
-<div class="tabs" id="tabs"></div><textarea id="tx" spellcheck="false"></textarea>
+<div class="tabs" id="tabs"></div><textarea id="tx" spellcheck="false" aria-label="Text to shrink"></textarea>
 <div class="box"><h2>Size</h2><div class="row" id="st"></div><div id="bars" style="margin-top:10px"></div></div>
 <div class="box"><h2>Code table (shortest first)</h2><div class="chips" id="ch"></div></div>
-<div class="box"><h2>Encoded bits, one colour per letter</h2><div class="bits" id="bt"></div><div class="m" id="rt"></div></div>
+<div class="box"><h2>Encoded bits, one colour per letter</h2><div class="bits" id="bt"></div><div class="m" id="rt" aria-live="polite"></div></div>
 <p class="m" id="ev"></p></main>
 <script>
 const $=i=>document.getElementById(i);let tm,S;const esc=s=>s==' '?'␣':s=='\n'?'↵':s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-async function go(){const text=$('tx').value;if(!text){return}
+async function go(){try{const text=$('tx').value;if(!text){return}
 const r=await fetch('/shrink',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});const j=await r.json();if(!r.ok){$('rt').textContent=j.detail;return}
 $('st').innerHTML=`<div><b>${j.chars}</b><small>characters</small></div><div><b>${j.avg_code_len}</b><small>bits per letter (best possible ≥ ${j.entropy})</small></div><div><b>${Math.round(j.payload_ratio*100)}%</b><small>of original, message only</small></div><div><b>${Math.round(j.ratio*100)}%</b><small>of original, incl. code table</small></div>`;
 const mx=Math.max(j.raw_bits,j.total_bits,j.zlib_ratio*j.raw_bits);const bar=(l,v,c)=>`<div class="bar ${c}"><span>${l}</span><i style="width:${v/mx*100}%"></i><span>${v}</span></div>`;
@@ -29,9 +29,9 @@ $('bars').innerHTML=bar('original bits',j.raw_bits,'')+bar('huffman total',j.tot
 $('ch').innerHTML=Object.entries(j.table).map(([c,b])=>`<span class="chip"><b>${esc(c)}</b> ${b}</span>`).join('');
 $('bt').innerHTML=[...text].map(c=>`<span>${j.table[c]}</span>`).join('');
 const back=await (await fetch('/expand',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({table:j.table,bits:j.bits})})).json();
-$('rt').innerHTML=back.text===text?'<span class="ok">✓ decoded back to exactly the same text</span>':'✗ mismatch'}
+$('rt').innerHTML=back.text===text?'<span class="ok">✓ decoded back to exactly the same text</span>':'✗ mismatch'}catch(e){$('rt').textContent='Could not shrink this text. Try again.'}}
 fetch('/samples').then(r=>r.json()).then(d=>{S=d.samples;$('tabs').innerHTML=S.map((s,i)=>`<button data-i="${i}">${s.name}</button>`).join('');
 const pick=i=>{$('tx').value=S[i].text;[...$('tabs').children].forEach((b,k)=>b.classList.toggle('on',k===i));go()};$('tabs').onclick=e=>{const b=e.target.closest('button');if(b)pick(+b.dataset.i)};pick(1);
-$('ev').innerHTML='Across the 5 samples Huffman beat zlib on '+d.evaluation.filter(e=>e.ratio<e.zlib_ratio).length+' and lost on '+d.evaluation.filter(e=>e.ratio>=e.zlib_ratio).length+': it only exploits letter frequencies, not repeated phrases.'});
+$('ev').innerHTML='Across the 5 samples Huffman beat zlib on '+d.evaluation.filter(e=>e.ratio<e.zlib_ratio).length+' and lost on '+d.evaluation.filter(e=>e.ratio>=e.zlib_ratio).length+': it only exploits letter frequencies, not repeated phrases.'}).catch(()=>{$('ev').textContent='Samples unavailable right now.'});
 $('tx').oninput=()=>{clearTimeout(tm);tm=setTimeout(go,200)};
 </script></body></html>

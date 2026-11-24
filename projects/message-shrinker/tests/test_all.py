@@ -82,3 +82,9 @@ def test_api_round_trip():
     assert c.post("/expand", json={"table": {"a": "0"}, "bits": "2"}).status_code == 422
     s = c.get("/samples").json()
     assert len(s["samples"]) == 5 and len(s["evaluation"]) == 5 and c.get("/").status_code == 200
+
+
+def test_index_has_shrink_error_texts_and_labels():
+    page = c.get("/").text
+    assert "Could not shrink this text" in page and "Samples unavailable" in page
+    assert 'aria-label="Text to shrink"' in page and 'id="rt" aria-live="polite"' in page
