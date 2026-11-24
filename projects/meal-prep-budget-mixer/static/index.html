@@ -18,11 +18,11 @@ h1{font:700 clamp(2.2rem,8vw,3.6rem)/1 "Archivo Narrow",sans-serif;text-transfor
 <div class="row" id="r" aria-live="polite"></div></main>
 <script>
 const $=i=>document.getElementById(i),f=n=>"$"+n.toFixed(2);
-(async()=>{const d=await (await fetch("/sample")).json();const r=await (await fetch("/mix",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)})).json();
+(async()=>{try{const d=await (await fetch("/sample")).json();const r=await (await fetch("/mix",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)})).json();
 const cost=Object.fromEntries(d.foods.map(x=>[x.name,x.cost]));
 const rc=(t,sub,x)=>`<div class="rc"><h2>${t}</h2><div class="c">${sub}</div>${Object.entries(x.servings).map(([n,s])=>`<div class="l"><span>${s} x ${n}</span><span>${f(s*cost[n])}</span></div>`).join("")}<hr>
 <div class="l"><span>Calories</span><span class="${x.kcal>=d.targets.kcal_min&&x.kcal<=d.targets.kcal_max?"good":"bad"}">${x.kcal}</span></div>
 <div class="l"><span>Protein</span><span class="${x.protein>=d.targets.protein_min?"good":"bad"}">${x.protein} g${x.protein<d.targets.protein_min?" (short "+(d.targets.protein_min-x.protein)+" g)":""}</span></div><hr>
 <div class="t"><span>TOTAL / DAY</span><span>${f(x.cost)}</span></div><div class="c" style="margin-top:8px">${x.meets_targets?"** ALL TARGETS MET **":"!! TARGETS MISSED !!"}</div></div>`;
-$("r").innerHTML=rc("Cheapest per kcal","fills calories, ignores protein",r.baseline)+rc("Best mix","exact search, all targets",r.best)})();
+$("r").innerHTML=rc("Cheapest per kcal","fills calories, ignores protein",r.baseline)+rc("Best mix","exact search, all targets",r.best)}catch(e){$("r").innerHTML='<p>Could not load the mix. Refresh to try again.</p>'}})();
 </script></body></html>

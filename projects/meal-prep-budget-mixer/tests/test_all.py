@@ -76,3 +76,7 @@ def test_api_validation():
     body = c.get("/sample").json()
     body["targets"]["protein_min"] = 900
     assert c.post("/mix", json=body).status_code == 422
+
+
+def test_index_has_mix_error_text():
+    assert "Could not load the mix" in TestClient(app).get("/").text
