@@ -63,3 +63,14 @@ def test_api():
     assert c.post("/guess", json={"text": ""}).status_code == 422
     assert len(c.get("/examples").json()["examples"]) == 5
     assert c.get("/evaluation").json()["trigram"] == 1.0 and c.get("/").status_code == 200
+
+
+def test_index_has_error_and_label_text():
+    page = c.get("/").text
+    assert "Could not guess the language" in page and "Accuracy figures unavailable" in page
+    assert 'aria-label="Text to identify"' in page
+
+
+def test_index_has_dark_colour_scheme_and_phone_heading():
+    page = c.get("/").text
+    assert "prefers-color-scheme: dark" in page and "clamp(34px,10vw,58px)" in page

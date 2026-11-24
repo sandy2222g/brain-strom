@@ -48,7 +48,7 @@ class Model:
 
 
 def load(path: Path = DATA) -> dict[str, list[str]]:
-    return json.loads(path.read_text())  # type: ignore[no-any-return]
+    return json.loads(path.read_text(encoding="utf-8"))  # type: ignore[no-any-return]
 
 
 def split(corpus: dict[str, list[str]]) -> tuple[dict[str, list[str]], list[tuple[str, str]]]:
