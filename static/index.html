@@ -22,10 +22,10 @@ background-image:repeating-linear-gradient(transparent 0 25px,var(--rule) 25px 2
 <script>
 const $=i=>document.getElementById(i);
 const N={daily:["Every day","review every card daily"],fixed:["Every 3 days","same gap, forever"],leitner:["Leitner boxes","1,2,4,8,16,32 days"],sm2:["SM-2 style","gaps grow with success"]};
-(async()=>{const d=await (await fetch("/sample")).json();const r=await (await fetch("/compare",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({cards:d.cards,days:d.days})})).json();
+(async()=>{try{const d=await (await fetch("/sample")).json();const r=await (await fetch("/compare",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({cards:d.cards,days:d.days})})).json();
 const s=r.strategies,mx=Math.max(...Object.values(s).map(x=>x.reviews_per_card));
 $("g").innerHTML=Object.keys(N).map(k=>{const x=s[k];return `<div class="c ${k=="sm2"?"win":""}"><h2>${N[k][0]}</h2><div class="u">${N[k][1]}</div>
 <div class="n">${Math.round(x.recall*100)}%</div><div class="u">recalled on day ${r.days}</div><div class="bar rc"><i style="width:${x.recall*100}%"></i></div>
 <div class="n">${x.reviews_per_card.toFixed(0)}</div><div class="u">reviews per card</div><div class="bar rv"><i style="width:${x.reviews_per_card/mx*100}%"></i></div></div>`}).join("");
-$("n").textContent=`SM-2 style recalls ${Math.round(s.sm2.recall*100)}% for ${Math.round(s.sm2.reviews/s.daily.reviews*100)}% of the reviews that daily practice needs. Averages over 40 simulated learners; the forgetting model is an assumption, not measured data.`})();
+$("n").textContent=`SM-2 style recalls ${Math.round(s.sm2.recall*100)}% for ${Math.round(s.sm2.reviews/s.daily.reviews*100)}% of the reviews that daily practice needs. Averages over 40 simulated learners; the forgetting model is an assumption, not measured data.`}catch(e){$("n").textContent="Could not compare the schedules. Refresh to try again."}})();
 </script></body></html>
