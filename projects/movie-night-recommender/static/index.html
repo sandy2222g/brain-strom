@@ -21,14 +21,14 @@ input[type=checkbox],input[type=radio]{accent-color:var(--pink);width:16px;heigh
 <h2>Tonight's tickets</h2><div class="tickets" id="o" aria-live="polite"></div><div class="m" id="m"></div></main>
 <script>
 const $=i=>document.getElementById(i);let users=[];
-async function pick(){const members=[...document.querySelectorAll("#u input:checked")].map(e=>+e.value);if(!members.length){$("o").innerHTML="<p>Choose at least one viewer.</p>";return}
+async function pick(){try{const members=[...document.querySelectorAll("#u input:checked")].map(e=>+e.value);if(!members.length){$("o").innerHTML="<p>Choose at least one viewer.</p>";return}
 const s=document.querySelector("input[name=s]:checked").value;
 const r=await fetch("/pick",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({members,strategy:s})});const d=await r.json();
-$("o").innerHTML=d.picks.map((p,i)=>`<div class="t" style="animation-delay:${i*50}ms"><small>${p.genre} · admit ${members.length}</small><h3>${p.title}</h3><div class="n"><span>group <b>${p.score}</b></span><span>lowest <b>${p.min}</b></span><span>average <b>${p.mean}</b></span></div></div>`).join("")}
-async function init(){const d=await (await fetch("/sample")).json();users=d.users;
+$("o").innerHTML=d.picks.map((p,i)=>`<div class="t" style="animation-delay:${i*50}ms"><small>${p.genre} · admit ${members.length}</small><h3>${p.title}</h3><div class="n"><span>group <b>${p.score}</b></span><span>lowest <b>${p.min}</b></span><span>average <b>${p.mean}</b></span></div></div>`).join("")}catch(e){$("o").textContent="Could not pick a film. Try again."}}
+async function init(){try{const d=await (await fetch("/sample")).json();users=d.users;
 $("u").innerHTML=users.slice(0,12).map((n,i)=>`<label><input type="checkbox" value="${i}" ${i<4?"checked":""}>${n}</label>`).join("");
 document.querySelectorAll("input").forEach(e=>e.onchange=pick);pick();
 const m=await (await fetch("/metrics")).json(),g=m.group_eval;
-$("m").innerHTML=`<div><b>${m.rmse_model}</b>rating error (model)</div><div><b>${m.rmse_film_mean}</b>per-film average</div><div><b>${m.rmse_global_mean}</b>one global average</div><div><b>${g.least_misery_min}</b>worst viewer's true score, our pick</div><div><b>${g.random_min}</b>same, random film</div>`}
+$("m").innerHTML=`<div><b>${m.rmse_model}</b>rating error (model)</div><div><b>${m.rmse_film_mean}</b>per-film average</div><div><b>${m.rmse_global_mean}</b>one global average</div><div><b>${g.least_misery_min}</b>worst viewer's true score, our pick</div><div><b>${g.random_min}</b>same, random film</div>`}catch(e){$("o").textContent="Could not load the film list."}}
 init();
 </script></body></html>

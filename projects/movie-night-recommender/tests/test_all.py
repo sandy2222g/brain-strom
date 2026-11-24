@@ -101,3 +101,8 @@ def test_api_validation():
     assert c.post("/pick", json={"members": [0, 0]}).status_code == 422
     assert c.post("/pick", json={"members": [999]}).status_code == 422
     assert c.post("/pick", json={"members": [1], "strategy": "x"}).status_code == 422
+
+
+def test_index_has_pick_error_texts():
+    page = c.get("/").text
+    assert "Could not pick a film" in page and "Could not load the film list" in page
