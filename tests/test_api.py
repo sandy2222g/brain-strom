@@ -47,3 +47,8 @@ def test_index_has_error_text_and_live_verdict():
         page = c.get("/").text
     assert "Could not load meeting times" in page
     assert 'id="verdict" role="status"' in page
+
+
+def test_sample_name_is_utf8():
+    with TestClient(app) as c:
+        assert "Tomás" in c.get("/sample").text
