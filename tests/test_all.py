@@ -88,3 +88,9 @@ def test_api_validation():
     bad = {"origin": "Nope/Zone", "dest": "Asia/Tokyo", "flight_day": "2026-11-20"}
     assert c.post("/plan", json=bad).status_code == 422
     assert c.post("/plan", json={"origin": "Asia/Tokyo", "dest": "Asia/Tokyo", "flight_day": "x"}).status_code == 422
+
+
+def test_index_has_error_texts():
+    page = c.get("/").text
+    assert "Could not load the time zones" in page
+    assert "Could not build the plan" in page

@@ -19,13 +19,13 @@ button{min-height:44px;border:0;border-radius:999px;background:var(--sun);color:
 <p class="note">A planning heuristic (body clock moves about 1 h/day earlier going east, 1.5 h/day later going west), not medical advice. Times in "home clock" are what to do before you land; "local" is the same moment on the destination's clock.</p></main>
 <script>
 const $=i=>document.getElementById(i),hh=v=>{const [a,b]=v.split(":").map(Number);return a+b/60};
-async function init(){const z=await (await fetch("/zones")).json();const opts=[...z.popular,...z.all.filter(x=>!z.popular.includes(x))].map(x=>`<option>${x}</option>`).join("");
+async function init(){try{const z=await (await fetch("/zones")).json();const opts=[...z.popular,...z.all.filter(x=>!z.popular.includes(x))].map(x=>`<option>${x}</option>`).join("");
 $("o").innerHTML=opts;$("t").innerHTML=opts;$("o").value="Asia/Kolkata";$("t").value="America/New_York";
-const d=new Date(Date.now()+14*864e5);$("f").value=d.toISOString().slice(0,10);$("go").onclick=go;go()}
-async function go(){const r=await fetch("/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({origin:$("o").value,dest:$("t").value,flight_day:$("f").value,bed:hh($("b").value),wake:hh($("w").value),pre_days:+$("p").value})});const d=await r.json();
+const d=new Date(Date.now()+14*864e5);$("f").value=d.toISOString().slice(0,10);$("go").onclick=go;go()}catch(e){$("tl").innerHTML='<div class="d">Could not load the time zones. Refresh to try again.</div>'}}
+async function go(){try{const r=await fetch("/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({origin:$("o").value,dest:$("t").value,flight_day:$("f").value,bed:hh($("b").value),wake:hh($("w").value),pre_days:+$("p").value})});const d=await r.json();
 if(!r.ok){$("s").innerHTML="";$("tl").innerHTML=`<div class="d">${d.detail}</div>`;return}
 $("s").innerHTML=`<div class="s"><b>${Math.abs(d.shift_hours)} h</b><span>${d.direction==="none"?"no shift":d.direction+"ward shift"}</span></div><div class="s"><b>${d.days_to_adjust}</b><span>days to adjust (${d.rate_per_day} h/day)</span></div>`;
 const tot=Math.abs(d.shift_hours)||1;
-$("tl").innerHTML=d.days.map((x,i)=>`<div class="d ${x.label==="Flight day"?"f":""}" style="animation-delay:${i*40}ms"><div><b>${x.label}</b><small>${x.day}</small><div class="bar"><i style="width:${x.shift_done/tot*100}%"></i></div></div><div>Home clock<small>sleep ${x.bedtime}, wake ${x.wake}</small></div><div>Destination local<small>sleep ${x.bedtime_dest}, wake ${x.wake_dest}</small><small>${x.light}</small></div></div>`).join("")}
+$("tl").innerHTML=d.days.map((x,i)=>`<div class="d ${x.label==="Flight day"?"f":""}" style="animation-delay:${i*40}ms"><div><b>${x.label}</b><small>${x.day}</small><div class="bar"><i style="width:${x.shift_done/tot*100}%"></i></div></div><div>Home clock<small>sleep ${x.bedtime}, wake ${x.wake}</small></div><div>Destination local<small>sleep ${x.bedtime_dest}, wake ${x.wake_dest}</small><small>${x.light}</small></div></div>`).join("")}catch(e){$("tl").innerHTML='<div class="d">Could not build the plan. Try again.</div>';$("s").innerHTML=""}}
 init();
 </script></body></html>
