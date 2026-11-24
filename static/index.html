@@ -8,7 +8,7 @@ main{max-width:1040px;margin:auto}h1{font-size:32px;margin:0;color:var(--choc)}h
 .card{background:var(--cream);border-radius:22px;padding:18px 22px;box-shadow:0 4px 0 #e8688a33;margin-bottom:16px}
 svg{width:100%;height:auto}.leg{display:flex;gap:18px;font-size:13px;flex-wrap:wrap}.leg i{display:inline-block;width:14px;height:4px;margin-right:6px;vertical-align:middle;border-radius:2px}
 .days{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}.day{background:var(--tile);border-radius:16px;padding:10px 12px;text-align:center;border:2px solid var(--line)}
-.day b{display:block;font-size:30px;color:var(--pink);line-height:1.1}.day small{opacity:.7}.wk{font-weight:800;letter-spacing:1px;text-transform:uppercase;font-size:12px;color:var(--choc)}
+.day b{display:block;font-size:30px;color:var(--pink);line-height:1.1}.day small{opacity:.7}.day .fc{display:block;font-size:14px;opacity:.7}.wk{font-weight:800;letter-spacing:1px;text-transform:uppercase;font-size:12px;color:var(--choc)}
 h2{margin:0 0 8px;font-size:15px;text-transform:uppercase;letter-spacing:1.5px;color:var(--choc)}.m{font-size:14px}.m b{color:var(--pink)}
 #err{color:#c23a63}
 </style></head><body><main>
@@ -30,7 +30,7 @@ $('ch').innerHTML=`<rect x="${cut}" y="10" width="${880-cut}" height="230" fill=
 $('m').innerHTML=`Average miss on the 14 hidden days: Holt-Winters <b>${e.mae_holdw}</b> items vs <b>${e.mae_naive}</b> for "same as last week".`;
 const s=await (await fetch('/sample')).json();
 const p=await (await fetch('/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({last_day:s.last_day,sold:s.sold,days:7})})).json();
-$('days').innerHTML=p.days.map(d=>`<div class="day" role="listitem"><div class="wk">${d.weekday}</div><b>${d.bake}</b><small>bake · forecast ${d.forecast}</small></div>`).join('');
+$('days').innerHTML=p.days.map(d=>`<div class="day" role="listitem"><div class="wk">${d.weekday}</div><b>${d.bake}</b><small>bake · forecast</small><span class="fc">${d.forecast}</span></div>`).join('');
 }catch(err){$('err').textContent='Could not load the forecast. Refresh to try again.'}}
 main();
 </script></body></html>
