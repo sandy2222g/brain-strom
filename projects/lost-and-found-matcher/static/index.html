@@ -119,11 +119,13 @@ function show(d) {
   });
 }
 async function search() {
+  try {
   const body = { description: $("desc").value.trim(), place: $("place").value, date: $("when").value };
   if (body.description.length < 3) { $("status").textContent = "Describe the item in a few words."; return; }
   $("status").textContent = "";
   const r = await fetch("/match", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) });
   if (!r.ok) { $("status").textContent = "Check the description and date."; return; } show(await r.json());
+  } catch (e) { $("status").textContent = "Could not reach the desk. Try again."; }
 }
 async function handIn() {
   const body = { description: $("desc").value.trim(), place: $("place").value, date: $("when").value };
@@ -131,14 +133,16 @@ async function handIn() {
   $("status").textContent = r.ok ? "Thank you. Logged as " + (await r.json()).id + ". Owners searching now will see it." : "Check the description and date.";
   if (r.ok) recent();
 }
-async function recent() { const d = await (await fetch("/found?limit=6")).json(); const ul = $("recent"); ul.textContent = ""; d.items.forEach((i) => { const li = el("li", "", i.description.replace(/^(Found a|Handed in a|Picked up a)\s*/i, "")); li.append(el("span", "", i.id + " · " + i.place + " · " + i.date)); ul.append(li); }); }
+async function recent() { let d; try { d = await (await fetch("/found?limit=6")).json(); } catch (e) { $("recent").textContent = ""; return; } const ul = $("recent"); ul.textContent = ""; d.items.forEach((i) => { const li = el("li", "", i.description.replace(/^(Found a|Handed in a|Picked up a)\s*/i, "")); li.append(el("span", "", i.id + " · " + i.place + " · " + i.date)); ul.append(li); }); }
 $("form").addEventListener("submit", (e) => { e.preventDefault(); (mode === "lost" ? search : handIn)(); });
 $("t-lost").addEventListener("click", () => setMode("lost")); $("t-found").addEventListener("click", () => setMode("found"));
 (async () => {
+  try {
   const places = await (await fetch("/places")).json(); places.forEach((p) => { const o = el("option", "", p); o.value = p; $("place").append(o); });
   chipsData = await (await fetch("/sample-lost")).json(); fillChips();
   const s = chipsData[0]; $("desc").value = s.description; $("place").value = s.place; $("when").value = s.date;
   setMode("lost"); recent(); search();
+  } catch (e) { $("status").textContent = "Could not load the desk. Refresh to try again."; }
 })();
 </script>
 </body>

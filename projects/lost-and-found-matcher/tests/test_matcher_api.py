@@ -76,3 +76,11 @@ def test_api_validation() -> None:
         assert c.post("/match", json={"description": "x", "date": "2026-10-01"}).status_code == 422
         assert c.post("/match", json={"description": "lost phone", "date": "not-a-date"}).status_code == 422
         assert c.post("/found", json={"description": "", "date": "2026-10-01"}).status_code == 422
+
+
+def test_index_has_desk_error_texts():
+    from lostfound.api import app
+
+    with TestClient(app) as c:
+        page = c.get("/").text
+    assert "Could not reach the desk" in page and "Could not load the desk" in page
