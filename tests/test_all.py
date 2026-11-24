@@ -83,3 +83,15 @@ def test_api():
     j = c.get("/curve", params={"kind": "scan"}).json()
     assert len(j["sizes"]) == 7 and set(j["curves"]) == {"fifo", "lru", "lfu", "optimal"}
     assert c.get("/curve", params={"kind": "x"}).status_code == 422 and c.get("/").status_code == 200
+
+
+def test_index_guards_stale_responses():
+    assert "const my=++seq" in c.get("/").text
+
+
+def test_index_has_error_text():
+    assert "Could not load this trace" in c.get("/").text
+
+
+def test_index_has_dark_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text
