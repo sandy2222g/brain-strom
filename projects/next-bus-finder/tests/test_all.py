@@ -61,3 +61,9 @@ def test_api():
     assert r["rows"][0]["route"] == "12 Harbour"
     assert c.get("/").status_code == 200
     assert c.post("/board", json={"routes": [], "now": "10:00"}).status_code == 422
+
+
+def test_index_has_departures_error_text_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not load the departures" in page
+    assert "prefers-color-scheme: dark" in page

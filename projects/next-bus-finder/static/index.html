@@ -7,15 +7,16 @@
 main{max-width:700px;margin:0 auto;padding:28px 16px}h1{margin:0 0 4px;letter-spacing:4px;text-transform:uppercase;font-size:1.4rem}
 .sub{color:var(--dim);margin-bottom:18px}
 .row{display:grid;grid-template-columns:1fr auto;gap:8px;border-bottom:1px dashed var(--dim);padding:12px 0}
-.row .n{font-size:1.25rem;color:var(--ink)}.t{text-align:right;white-space:nowrap}.t i{font-style:normal;color:var(--dim)}
+.row .n{font-size:1.25rem;color:var(--ink)}.t{text-align:right;white-space:nowrap}@media(max-width:480px){.row{grid-template-columns:1fr}.t{text-align:left;white-space:normal}}.t i{font-style:normal;color:var(--dim)}
 .tag{display:inline-block;border:1px solid var(--amber);padding:0 6px;font-size:.8rem;margin-left:8px}
+@media (prefers-color-scheme: dark){:root{--dim:#c9b57c}body{background:#15161c;color:#eceef5}}
 </style></head><body><main>
 <h1>Departures</h1><div class="sub" id="sub"></div><div id="out"></div></main>
 <script>
-(async()=>{
+(async()=>{try{
   const s=await (await fetch("/sample")).json();
   const r=await (await fetch("/board",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({routes:s.routes,now:s.now,walk_min:s.walk_min})})).json();
   document.getElementById("sub").textContent=`now ${s.now} · ${s.walk_min} min walk to the stop`;
-  document.getElementById("out").innerHTML=r.rows.map(x=>`<div class="row"><div class="n">${x.route}${x.is_last?'<span class="tag">LAST BUS</span>':""}</div><div class="t">${x.next.map(d=>`${d.time}${d.tomorrow?"*":""} <i>${d.in_min}m</i>`).join(" &nbsp; ")}</div></div>`).join("")+'<div class="sub" style="margin-top:14px">* tomorrow</div>';
+  document.getElementById("out").innerHTML=r.rows.map(x=>`<div class="row"><div class="n">${x.route}${x.is_last?'<span class="tag">LAST BUS</span>':""}</div><div class="t">${x.next.map(d=>`${d.time}${d.tomorrow?"*":""} <i>${d.in_min}m</i>`).join(" &nbsp; ")}</div></div>`).join("")+'<div class="sub" style="margin-top:14px">* tomorrow</div>';}catch(e){document.getElementById("out").textContent="Could not load the departures. Refresh to try again."}
 })();
 </script></body></html>
