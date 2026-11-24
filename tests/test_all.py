@@ -92,3 +92,10 @@ def test_api_without_labels_has_no_evaluation():
 
 def test_api_validation():
     assert c.post("/dedupe", json={"contacts": [], "threshold": 0.1}).status_code == 422
+
+
+def test_index_has_error_text_and_guard_and_label():
+    page = c.get("/").text
+    assert "Could not load the contacts" in page
+    assert "const my=++seq" in page
+    assert 'aria-label="Match strictness"' in page
