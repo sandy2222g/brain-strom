@@ -78,3 +78,9 @@ def test_api():
     assert c.post("/summarise", json={"text": "  ", "k": 3}).status_code == 422
     assert c.post("/summarise", json={"text": "Hi.", "k": 0}).status_code == 422
     assert c.get("/").status_code == 200
+
+
+def test_index_has_summary_error_texts_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not summarise this meeting" in page and "Accuracy figures unavailable" in page
+    assert 'aria-label="Meeting"' in page and "prefers-color-scheme: dark" in page

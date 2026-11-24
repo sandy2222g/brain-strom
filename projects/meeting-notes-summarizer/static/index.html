@@ -12,19 +12,20 @@ h2{font-size:13px;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px;col
 .act{background:#fff;border-left:4px solid var(--pen);padding:8px 14px;margin-bottom:8px;font-size:15px}.act b{color:var(--pen)}
 .sum{background:#fffde7;border:1px dashed #d4c26a;padding:10px 14px;margin-bottom:16px;font-size:15px}
 .legend{font-size:12px;font-family:Arial,sans-serif;opacity:.75;margin-top:10px}.m{font-size:13px;margin-top:20px;font-family:Arial,sans-serif;opacity:.8}
+@media (prefers-color-scheme: dark){:root{--bg:#1c1917;--ink:#f0e9dc;--mark:#6b5e12;--pen:#ff8fb3;--line:#3a332b}.doc,.act,.sum,select{background:#262220}.sum{border-color:#8a7c3e}select{color:var(--ink)}button{background:var(--ink);color:#1c1917}}
 </style></head><body><main>
 <h1>Meeting Notes Summarizer</h1><p class="s">TextRank picks the sentences that matter; a pattern finds who owes what.</p>
-<div class="top"><select id="sel"></select><button id="go">Summarise</button></div>
+<div class="top"><select id="sel" aria-label="Meeting"></select><button id="go">Summarise</button></div>
 <div class="cols"><div><h2>Transcript</h2><div class="doc" id="doc"></div><p class="legend"><span style="background:var(--mark)">highlight</span> = chosen by TextRank &nbsp; <span style="text-decoration:underline wavy #90a4ae">wavy</span> = first three sentences (baseline)</p></div>
 <div><h2>Summary</h2><div class="sum" id="sum"></div><h2>Action items</h2><div id="act"></div><p class="m" id="m"></p></div></div></main>
 <script>
 let D;const $=i=>document.getElementById(i);
-async function run(){const m=D.meetings[$('sel').value];
+async function run(){try{const m=D.meetings[$('sel').value];
 const j=await (await fetch('/summarise',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:m.text,k:3})})).json();
 $('doc').innerHTML=j.sentences.map((s,i)=>`<span class="${j.chosen.includes(i)?'pick':''} ${j.lead_baseline.includes(i)?'lead':''}">${s}</span>`).join(' ');
 $('sum').innerHTML=j.summary.map(s=>`<div>• ${s}</div>`).join('');
-$('act').innerHTML=j.actions.length?j.actions.map(a=>`<div class="act"><b>${a.owner}</b> — ${a.task}${a.due?` <i>(by ${a.due})</i>`:''}</div>`).join(''):'<div class="act">None found.</div>'}
+$('act').innerHTML=j.actions.length?j.actions.map(a=>`<div class="act"><b>${a.owner}</b> — ${a.task}${a.due?` <i>(by ${a.due})</i>`:''}</div>`).join(''):'<div class="act">None found.</div>'}catch(e){$('sum').textContent='Could not summarise this meeting. Try again.';$('doc').innerHTML='';$('act').innerHTML=''}}
 fetch('/sample').then(r=>r.json()).then(d=>{D=d;$('sel').innerHTML=d.meetings.map((m,i)=>`<option value="${i}">${m.title}</option>`).join('');run()});
-fetch('/metrics').then(r=>r.json()).then(m=>{$('m').textContent=`On ${m.meetings} labelled meetings, ${(m.textrank_precision*100).toFixed(0)}% of TextRank's picks were key sentences vs ${(m.lead_precision*100).toFixed(0)}% for "first three sentences" (tiny test set).`});
+fetch('/metrics').then(r=>r.json()).then(m=>{$('m').textContent=`On ${m.meetings} labelled meetings, ${(m.textrank_precision*100).toFixed(0)}% of TextRank's picks were key sentences vs ${(m.lead_precision*100).toFixed(0)}% for "first three sentences" (tiny test set).`}).catch(()=>{$('m').textContent='Accuracy figures unavailable right now.'});
 $('go').onclick=run;$('sel').onchange=run;
 </script></body></html>
