@@ -12,21 +12,26 @@ button{background:var(--ink);color:var(--bg);border:0;padding:.55rem 1rem;font:i
 .lane.best{background:var(--best);color:var(--bg)}.lane.no{opacity:.55;border-style:dashed}
 .lane b{font-size:1.1rem}.t{font-size:1.3rem}.sub{font-size:.8rem;color:var(--mute)}.best .sub{color:#cdbfe8}
 .note{margin-top:14px;padding:10px 14px;border-left:6px solid var(--warn);background:var(--card)}
+@media (prefers-color-scheme: dark){:root{--bg:#141414;--ink:#eeeeee;--card:#1e1e1e;--best:#eeeeee;--mute:#a8a8a8;--warn:#f0806b}.best .sub{color:#4a4a4a}}
 </style></head><body><main>
 <h1>Checkout line chooser</h1>
 <p>The shortest queue is not always the fastest one.</p>
 <label>Items in my basket <input id="n" type="number" min="1" max="500" value="14"><button id="go">Pick a line</button></label>
-<div id="out"></div></main>
+<div id="out" role="status"></div></main>
 <script>
 const out=document.getElementById("out"),fmt=s=>`${Math.floor(s/60)}m ${String(Math.round(s%60)).padStart(2,"0")}s`;
-let sample;
+let sample,seq=0;
 async function run(){
+  const my=++seq;
+  try{
   sample=sample||await (await fetch("/sample")).json();
   const items=+document.getElementById("n").value;
   const r=await (await fetch("/pick",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lanes:sample.lanes,items})})).json();
+  if(my!==seq)return;
   if(!r.rows){out.textContent="Check the basket size.";return}
   out.innerHTML=r.rows.map(x=>`<div class="lane ${x.name===r.best?"best":""} ${x.eligible?"":"no"}"><div><b>${x.name}</b><div class="sub">${x.people_ahead} ahead${x.eligible?"":" · basket too big"}</div></div><div class="t">${x.eligible?fmt(x.seconds):"—"}</div></div>`).join("")
    +(r.fewest_people!==r.best?`<div class="note">Joining the shortest queue (${r.fewest_people}) would cost you ${fmt(r.extra_seconds_if_fewest_people)} more.</div>`:`<div class="note">Here the shortest queue is also the fastest.</div>`);
+  }catch(e){out.textContent="Could not pick a line. Try again.";}
 }
 document.getElementById("go").onclick=run;run();
 </script></body></html>

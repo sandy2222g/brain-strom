@@ -67,3 +67,15 @@ def test_api():
     assert len(r["items"]) == 5 and r["totals"]["smart"]["short_days"] == 2
     assert c.get("/evaluation", params={"service": 2}).status_code == 422
     assert c.get("/").status_code == 200
+
+
+def test_index_has_load_error_text():
+    assert "Could not load the stock plan" in c.get("/").text
+
+
+def test_service_buttons_expose_pressed_state():
+    assert 'aria-pressed="true"' in c.get("/").text
+
+
+def test_index_has_dark_colour_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text

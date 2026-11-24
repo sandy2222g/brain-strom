@@ -61,3 +61,19 @@ def test_api():
     assert c.get("/metrics").json()["queries"] == 32
     assert c.post("/search", json={"query": "the"}).status_code == 422
     assert c.get("/").status_code == 200
+
+
+def test_index_has_search_error_text():
+    assert "Could not search. Try again." in c.get("/").text
+
+
+def test_index_has_metrics_fallback():
+    assert "Accuracy figures unavailable" in c.get("/").text
+
+
+def test_index_guards_stale_responses():
+    assert "const my=++seq" in c.get("/").text
+
+
+def test_index_has_dark_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text

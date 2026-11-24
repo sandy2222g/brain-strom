@@ -74,3 +74,15 @@ def test_api():
     assert c.post("/estimate", json={**S, "preset": "x"}).status_code == 422
     assert c.post("/estimate", json={**S, "wickets": 12}).status_code == 422
     assert c.get("/").status_code == 200
+
+
+def test_index_has_run_error_text():
+    assert "Could not work out the odds" in c.get("/").text
+
+
+def test_index_has_sample_error_text():
+    assert "Could not load the sample scenario" in c.get("/").text
+
+
+def test_one_live_region():
+    assert c.get("/").text.count('role="status"') == 1

@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Golden Hour Planner</title>
+<style>
+:root{
+  --paper:#e9efe6;--panel:#f7faf5;--ink:#1c2622;--moss:#35604a;--moss-ink:#f4f8f2;
+  --ochre:#c4871a;--slate:#3e6289;--mute:#5f6d64;--rule:#c5d1c3;--err:#a3342b;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#0f1714;--panel:#17221e;--ink:#e3ece4;--moss:#7fb596;--moss-ink:#0f1714;
+    --ochre:#e6b04c;--slate:#8fb3da;--mute:#9bb0a2;--rule:#2c3b34;--err:#ff9b8f;
+  }
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;min-height:100vh;background:var(--paper);color:var(--ink);
+  font:16px/1.5 "Palatino Linotype",Palatino,"Book Antiqua",serif;padding:16px}
+.app{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:260px minmax(0,1fr);gap:24px;align-items:start}
+.side{position:sticky;top:16px}
+h1{font-size:34px;line-height:1.1;font-weight:700;margin:8px 0 6px;letter-spacing:-.5px;color:var(--moss)}
+.tag{margin:0 0 6px;color:var(--mute);font-style:italic}
+.lbl,.mono,.card h2,.panelhead{font-family:Consolas,"Courier New",monospace}
+.lbl{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:16px 0 6px}
+select,input{width:100%;font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:9px 10px}
+button{width:100%;margin-top:18px;font:inherit;font-weight:700;background:var(--moss);color:var(--moss-ink);border:0;border-radius:6px;padding:11px;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--slate);outline-offset:2px}
+#err{color:var(--err);min-height:1.5em;margin:10px 0 0;font-size:14px}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px 16px}
+.panelhead{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute)}
+svg{width:100%;height:auto;display:block;margin-top:8px}
+.legend{display:flex;gap:16px;font-size:14px;color:var(--mute);margin-top:4px;flex-wrap:wrap}
+.sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:16px 0}
+.card{background:var(--panel);border:1px solid var(--rule);border-left:4px solid var(--moss);border-radius:6px;padding:12px 14px}
+.card.gold{border-left-color:var(--ochre)}
+.card.blue{border-left-color:var(--slate)}
+.card h2{margin:0;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.card p{margin:6px 0 0;font:600 22px/1.25 Consolas,"Courier New",monospace}
+.note{font-size:14px;color:var(--mute);margin:0}
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr);gap:16px}
+  .side{position:static}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <h1>Golden Hour</h1>
+    <p class="tag">When the light is best, worked out from the sun's position. No keys, no network.</p>
+    <label class="lbl" for="pl">Place</label>
+    <select id="pl"></select>
+    <label class="lbl" for="d">Date</label>
+    <input id="d" type="date">
+    <button id="go" type="button">Plan the light</button>
+    <p id="err" role="alert"></p>
+  </aside>
+  <main>
+    <section class="panel" aria-label="Day strip">
+      <div class="panelhead"><span>Day strip</span><span>00:00 to 24:00 local</span></div>
+      <svg id="arc" viewBox="0 0 800 170" role="img" aria-label="Light bands across the day"></svg>
+      <div class="legend">
+        <span><span class="sw" style="background:var(--ochre)"></span>Golden hour</span>
+        <span><span class="sw" style="background:var(--slate)"></span>Blue hour</span>
+        <span><span class="sw" style="background:var(--ink)"></span>Sunrise and sunset</span>
+      </div>
+    </section>
+    <section class="cards" id="g"></section>
+    <p class="note" id="base"></p>
+  </main>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+let DATA = null;
+
+// "HH:MM" or "HH:MM +1" to minutes after local midnight
+const toMin = s => {
+  if (!s) return null;
+  const [h, mi] = s.split(' ')[0].split(':');
+  return +h * 60 + +mi + (s.includes('+1') ? 1440 : 0);
+};
+const xAt = t => 40 + t / 1440 * 720;
+
+function drawStrip(p) {
+  let h = '<line x1="40" x2="760" y1="110" y2="110" style="stroke:var(--rule);stroke-width:2"/>';
+  const band = (w, col) => {
+    if (!w) return;
+    const a = toMin(w[0]), b = toMin(w[1]);
+    h += `<rect x="${xAt(a)}" y="30" width="${Math.max(3, xAt(b) - xAt(a))}" height="70" rx="3" style="fill:${col};opacity:.8"/>`;
+  };
+  band(p.morning_golden, 'var(--ochre)');
+  band(p.evening_golden, 'var(--ochre)');
+  band(p.morning_blue, 'var(--slate)');
+  band(p.evening_blue, 'var(--slate)');
+  if (p.sunrise && p.sunset) {
+    h += `<circle cx="${xAt(toMin(p.sunrise))}" cy="110" r="6" style="fill:var(--ink)"/>`
+       + `<circle cx="${xAt(Math.min(1440, toMin(p.sunset)))}" cy="110" r="6" style="fill:var(--ink)"/>`;
+  }
+  for (const hr of [0, 6, 12, 18, 24]) {
+    h += `<text x="${xAt(hr * 60)}" y="155" text-anchor="middle" style="fill:var(--mute);font:24px Consolas,'Courier New',monospace">${String(hr).padStart(2, '0')}:00</text>`;
+  }
+  $('arc').innerHTML = h;
+}
+
+const win = w => (w ? w.join(' – ') : 'none today');
+const card = (label, cls, value) =>
+  `<article class="card ${cls}"><h2>${label}</h2><p>${value}</p></article>`;
+
+async function run() {
+  $('err').textContent = '';
+  const p = DATA.places[$('pl').value];
+  try {
+    const r = await fetch('/plan', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({date: $('d').value, lat: p.lat, lon: p.lon, tz: p.tz}),
+    });
+    const j = await r.json();
+    if (!r.ok) { $('err').textContent = j.detail; return; }
+    const x = j.plan, b = j.rule_of_thumb;
+    drawStrip(x);
+    $('g').innerHTML = x.status !== 'normal'
+      ? card('Status', '', x.status)
+      : card('Sunrise', '', x.sunrise) + card('Sunset', '', x.sunset)
+        + card('Morning golden hour', 'gold', win(x.morning_golden))
+        + card('Evening golden hour', 'gold', win(x.evening_golden))
+        + card('Morning blue hour', 'blue', win(x.morning_blue))
+        + card('Evening blue hour', 'blue', win(x.evening_blue));
+    $('base').textContent = b.sunrise_error_min === null
+      ? 'A "6:00 to 18:00" rule of thumb has no answer here.'
+      : `A "6:00 to 18:00" rule of thumb would be off by ${b.sunrise_error_min} min at sunrise and ${b.sunset_error_min} min at sunset.`;
+  } catch (e) {
+    $('err').textContent = 'Could not reach the planner. Try again.';
+  }
+}
+
+fetch('/sample').then(r => r.json()).then(d => {
+  DATA = d;
+  $('pl').innerHTML = d.places.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
+  $('d').value = d.date;
+  run();
+});
+$('go').onclick = run;
+</script>
+</body>
+</html>

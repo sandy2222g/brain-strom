@@ -20,11 +20,13 @@ input[type=range]{accent-color:var(--red);min-height:44px}:focus-visible{outline
 <div class="cal"><h2>Does it hold up? Promised vs actual on later, unseen days</h2><div id="cal"></div><p class="mute" id="note"></p></div></main>
 <script>
 const $=i=>document.getElementById(i),hh=h=>{const m=Math.round(h*60);return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0")};
-async function go(){const a=+$("a").value,c=+$("c").value;$("av").textContent=hh(a);$("cv").textContent=Math.round(c*100)+"%";
-const r=await fetch("/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({arrive_hour:a,confidence:c})});const d=await r.json();
-$("bd").innerHTML=r.ok?`<small>Leave at</small><div class="t">${d.leave_time}</div><p>Allow ${d.minutes_needed} min. A typical day takes ${d.typical_minutes}, so that is +${d.buffer_minutes} min of safety.</p>`:`<p>${d.detail}</p>`}
-async function cal(){const d=await (await fetch("/calibration")).json();
+let seq=0;
+async function go(){const my=++seq;const a=+$("a").value,c=+$("c").value;$("av").textContent=hh(a);$("cv").textContent=Math.round(c*100)+"%";
+try{
+const r=await fetch("/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({arrive_hour:a,confidence:c})});const d=await r.json();if(my!==seq)return;
+$("bd").innerHTML=r.ok?`<small>Leave at</small><div class="t">${d.leave_time}</div><p>Allow ${d.minutes_needed} min. A typical day takes ${d.typical_minutes}, so that is +${d.buffer_minutes} min of safety.</p>`:`<p>${d.detail}</p>`;}catch(e){$("bd").innerHTML="<p>Could not work out the leave time. Try again.</p>";}}
+async function cal(){try{const d=await (await fetch("/calibration")).json();
 $("cal").innerHTML=d.levels.map(l=>`<div class="r"><span>${Math.round(l.target*100)}% target</span><span class="bar"><i style="width:${l.actual*100}%"></i><u style="left:${l.target*100}%"></u></span><span>${(l.actual*100).toFixed(0)}% actual</span></div>`).join("");
-$("note").textContent=`Red tick = promised. Tested on ${d.test_trips} later trips. A flat 20% buffer on the average trip is on time ${(d.fixed_buffer_20pct*100).toFixed(0)}% of days, but cannot adapt to rush hour or a chosen confidence.`}
+$("note").textContent=`Red tick = promised. Tested on ${d.test_trips} later trips. A flat 20% buffer on the average trip is on time ${(d.fixed_buffer_20pct*100).toFixed(0)}% of days, but cannot adapt to rush hour or a chosen confidence.`;}catch(e){$("note").textContent="Calibration is unavailable right now.";}}
 $("a").oninput=$("c").oninput=go;go();cal();
 </script></body></html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reading Pace Planner</title>
+<style>
+:root{--bg:#f1eef0;--ink:#2a1b17;--accent:#8a4b2a;--card:#ffffff;--mute:#7d6d66;--rest:#e4dcd6;--line:#d8cdc7;color-scheme:light}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#1d1716;--ink:#f4e9e3;--accent:#e7a478;--card:#2a201d;--mute:#b1a097;--rest:#332825;--line:#43362f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1d1716;--ink:#f4e9e3;--accent:#e7a478;--card:#2a201d;--mute:#b1a097;--rest:#332825;--line:#43362f;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--ink);font:16px/1.5 Cambria,"Hoefler Text","Book Antiqua",serif;padding:0 0 32px}
+main{max-width:780px;margin:0 auto;padding:30px 16px}
+h1{margin:0;font-size:2.1rem;font-weight:700;letter-spacing:-.01em}
+#sub{color:var(--mute);margin:6px 0 16px}
+button{background:var(--accent);color:#fff;border:0;border-radius:4px;padding:.6rem 1.3rem;font:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--line);outline-offset:2px}
+.wkhead{display:grid;grid-template-columns:90px repeat(7,1fr);gap:6px;margin:22px 0 6px;font:600 12px Calibri,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.wk{display:grid;grid-template-columns:90px repeat(7,1fr);gap:6px;align-items:stretch;margin-bottom:6px}
+.wk .lbl{font:600 13px Calibri,sans-serif;color:var(--mute);align-self:center}
+.d{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 4px;text-align:center;min-height:62px}
+.d.rest{background:var(--rest);border-color:transparent;color:var(--mute)}
+.d b{display:block;font:700 1.3rem Calibri,sans-serif;color:var(--accent)}
+.d span{font:400 .72rem Calibri,sans-serif;color:var(--mute)}
+.note{margin-top:18px;color:var(--mute);font-size:.95rem}
+@media(max-width:560px){.wkhead,.wk{grid-template-columns:repeat(7,1fr)}.wkhead .h0,.wk .lbl{display:none}}
+</style></head><body><main>
+<h1>Reading Pace Planner</h1>
+<p id="sub">Pages per day, skipping rest days.</p>
+<button id="go">Plan the sample book</button>
+<div id="out"></div></main>
+<script>
+const out=document.getElementById("out"),names=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+document.getElementById("go").onclick=async()=>{
+  const s=await (await fetch("/sample")).json();
+  const r=await (await fetch("/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(s)})).json();
+  document.getElementById("sub").textContent=`${r.title}: ${r.pages_left} pages left over ${r.reading_days} reading days.`;
+  const first=new Date(r.schedule[0].date+"T00:00:00Z"),lead=r.schedule[0].weekday;
+  const map=Object.fromEntries(r.schedule.map(x=>[x.date,x.pages]));
+  const last=new Date(r.schedule[r.schedule.length-1].date+"T00:00:00Z");
+  const start=new Date(first);start.setUTCDate(start.getUTCDate()-lead);
+  const mon=d=>d.toISOString().slice(5,10);
+  let h='<div class="wkhead"><span class="h0">Week of</span>'+names.map(n=>`<span>${n}</span>`).join("")+'</div>';
+  let row="",rowStart=null;
+  for(let d=new Date(start);d<=last||d.getUTCDay()!==1;d.setUTCDate(d.getUTCDate()+1)){
+    if(d.getUTCDay()===1){if(row)h+=`<div class="wk"><span class="lbl">${mon(rowStart)}</span>${row}</div>`;row="";rowStart=new Date(d);}
+    const k=d.toISOString().slice(0,10),inRange=d>=first&&d<=last;
+    if(map[k]!==undefined)row+=`<div class="d"><b>${map[k]}</b><span>${k.slice(5)}</span></div>`;
+    else row+=`<div class="d rest"><span>${inRange?"rest":""} ${k.slice(5)}</span></div>`;
+  }
+  if(row)h+=`<div class="wk"><span class="lbl">${mon(rowStart)}</span>${row}</div>`;
+  out.innerHTML=h+`<p class="note">A plan that divides by all calendar days says ${r.naive_per_day} pages a day, which only reaches ${r.naive_total} of ${r.pages_left} pages if you skip rest days.</p>`;
+};
+document.getElementById("go").click();
+</script></body></html>

@@ -70,3 +70,9 @@ def test_api():
 
 def test_api_validation():
     assert c.post("/plan", json={"budget": 0, "people": {}}).status_code == 422
+
+
+def test_index_has_error_text_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not plan the gifts" in page
+    assert "prefers-color-scheme: dark" in page

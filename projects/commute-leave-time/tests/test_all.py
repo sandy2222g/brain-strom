@@ -92,3 +92,10 @@ def test_api_validation():
 
 def test_rush_hour_takes_longer_than_early_morning():
     assert predict_minutes(TRAIN, 8.3, 0.5) > predict_minutes(TRAIN, 7.5, 0.5)
+
+
+def test_index_has_error_texts_and_guard():
+    page = TestClient(app).get("/").text
+    assert "Could not work out the leave time" in page
+    assert "Calibration is unavailable right now" in page
+    assert "const my=++seq" in page

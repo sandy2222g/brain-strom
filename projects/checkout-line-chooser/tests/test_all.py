@@ -71,3 +71,19 @@ def test_api():
     assert r["extra_seconds_if_fewest_people"] == pytest.approx(342.5 - 265)
     assert c.get("/").status_code == 200
     assert c.post("/pick", json={"lanes": [], "items": 5}).status_code == 422
+
+
+def test_index_has_error_text():
+    assert "Could not pick a line" in c.get("/").text
+
+
+def test_index_ignores_stale_results():
+    assert "const my=++seq" in c.get("/").text
+
+
+def test_index_announces_recommendation():
+    assert 'id="out" role="status"' in c.get("/").text
+
+
+def test_index_has_dark_colour_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text

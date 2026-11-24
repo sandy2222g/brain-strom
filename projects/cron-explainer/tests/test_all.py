@@ -81,3 +81,11 @@ def test_api():
     assert c.get("/explain", params={"expr": "bogus"}).status_code == 422
     assert c.get("/explain", params={"expr": "* * * * *", "start": "not-a-date"}).status_code == 422
     assert len(c.get("/examples").json()["examples"]) == 8 and c.get("/").status_code == 200
+
+
+def test_index_has_error_texts_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not explain this schedule" in page
+    assert "Examples are unavailable right now" in page
+    assert 'id="say" role="status"' in page
+    assert "prefers-color-scheme: dark" in page

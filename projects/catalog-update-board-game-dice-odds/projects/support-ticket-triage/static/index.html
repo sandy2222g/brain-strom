@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en" data-motion>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inbox Triage</title>
+<meta name="description" content="Paste a customer message and see its category, priority and reply deadline. Upload a CSV to sort a whole inbox.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Visual system dealt with taste-skill: palette "teal-on-paper", type "onest" (Onest + JetBrains Mono), sharp radius. Layout: priority lanes. */
+:root {
+  --bg:#f7f9f8; --surface:#ebf0ee; --card:#ffffff; --ink:#06525c; --text:#1c2a2c; --muted:#53686b; --accent:#06525c; --on-accent:#ffffff; --line:#cfdad8;
+  --urgent:#b3261e; --high:#b85a0b; --medium:#8a6a00; --low:#2f7a4f;
+  --sans:"Onest", system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, monospace; --ease:cubic-bezier(.2,.8,.2,1); --r:2px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#0e1819; --surface:#152325; --card:#192b2d; --ink:#7fd0d9; --text:#e3eeee; --muted:#93a9ac; --accent:#7fd0d9; --on-accent:#08191b; --line:#27403f;
+  --urgent:#ff7a70; --high:#ff9a52; --medium:#e6c04a; --low:#62c28b; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg:#0e1819; --surface:#152325; --card:#192b2d; --ink:#7fd0d9; --text:#e3eeee; --muted:#93a9ac; --accent:#7fd0d9; --on-accent:#08191b; --line:#27403f;
+  --urgent:#ff7a70; --high:#ff9a52; --medium:#e6c04a; --low:#62c28b; color-scheme: dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:400 16px/1.5 var(--sans); }
+.wrap { max-width:1200px; margin:0 auto; padding-block:0 56px; padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px)); }
+.top { display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; padding-block:18px; border-bottom:1px solid var(--line); }
+.brand { font:600 1rem var(--sans); color:var(--ink); letter-spacing:-.01em; }
+.top a { color:var(--muted); font:400 .85rem var(--mono); text-decoration:none; background:linear-gradient(currentColor,currentColor) 0 100%/0 1px no-repeat; transition:background-size 150ms var(--ease), color 150ms var(--ease); }
+.top a:hover { color:var(--ink); background-size:100% 1px; }
+.top nav { display:flex; gap:18px; }
+.hero { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:40px; padding-block:40px 36px; align-items:start; }
+@media (max-width:860px) { .hero { grid-template-columns:minmax(0,1fr); gap:24px; padding-top:24px; } }
+h1 { font:500 clamp(2rem,4.8vw,3.3rem)/1.04 var(--sans); letter-spacing:-.04em; color:var(--ink); margin:0 0 14px; text-wrap:balance; }
+.lead { color:var(--muted); margin:0 0 20px; max-width:46ch; }
+h2 { font:500 1.2rem/1.2 var(--sans); letter-spacing:-.02em; color:var(--ink); margin:0 0 4px; }
+.label { font:500 .72rem/1 var(--mono); letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+.composer { background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:18px; }
+label.f { display:block; margin:12px 0 4px; font-weight:500; font-size:.9rem; }
+label.f:first-of-type { margin-top:0; }
+input[type=text], textarea { width:100%; padding:10px; background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:var(--r); font:inherit; min-height:44px; }
+textarea { min-height:112px; resize:vertical; }
+input:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.btn { min-height:44px; padding:0 18px; border:1px solid var(--accent); background:var(--accent); color:var(--on-accent); border-radius:var(--r); font:500 1rem var(--sans); cursor:pointer; transition:transform 150ms var(--ease), filter 150ms var(--ease); }
+.btn:hover { filter:brightness(1.12); transform:translateY(-1px); } .btn:active { transform:translateY(1px); transition-duration:90ms; }
+.btn.ghost { background:transparent; color:var(--accent); }
+.chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+.chips .btn { min-height:36px; padding:0 12px; font-size:.88rem; }
+.verdict { margin-top:16px; border-top:1px solid var(--line); padding-top:14px; display:grid; grid-template-columns:auto 1fr; gap:6px 18px; align-items:center; }
+.stamp { grid-row:span 2; font:600 1.1rem var(--mono); text-transform:uppercase; letter-spacing:.06em; border:2px solid var(--c); color:var(--c); padding:8px 12px; border-radius:var(--r); }
+.verdict .what { font-weight:500; } .verdict .meta { color:var(--muted); font-size:.9rem; }
+.urgent { --c:var(--urgent); } .high { --c:var(--high); } .medium { --c:var(--medium); } .low { --c:var(--low); }
+.board-head { display:flex; justify-content:space-between; align-items:end; gap:16px; flex-wrap:wrap; margin-bottom:14px; }
+.lanes { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:14px; }
+@media (max-width:980px) { .lanes { grid-template-columns:repeat(2, minmax(0,1fr)); } }
+@media (max-width:560px) { .lanes { grid-template-columns:minmax(0,1fr); } }
+.lane { background:var(--surface); border-top:3px solid var(--c); padding:10px; border-radius:var(--r); min-width:0; }
+.lane header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+.lane header b { font:600 .85rem var(--mono); text-transform:uppercase; letter-spacing:.06em; color:var(--c); }
+.lane header span { font:400 .8rem var(--mono); color:var(--muted); }
+.tk { background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:10px; margin-bottom:8px; transition:transform 150ms var(--ease), border-color 150ms var(--ease); }
+.tk:hover { transform:translateY(-2px); border-color:var(--c); }
+.tk strong { display:block; font-weight:500; font-size:.92rem; overflow-wrap:anywhere; }
+.tk .row { display:flex; justify-content:space-between; gap:8px; margin-top:6px; font:400 .75rem var(--mono); color:var(--muted); }
+.upload { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.upload input[type=file] { max-width:260px; }
+.enter { animation:enter 900ms cubic-bezier(.22,1,.36,1) both; }
+@keyframes enter { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion: reduce) { .enter { animation:none; } * { transition:none !important; } }
+[hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><span class="brand">Inbox Triage</span><nav><a href="/docs">API docs</a><a href="/metrics">Model metrics</a></nav></div>
+
+  <section class="hero enter">
+    <div>
+      <h1>Reply to the right customer first</h1>
+      <p class="lead">Paste a message. You get its topic, how urgent it is, and the time you have to answer. Trained on 1,200 synthetic tickets.</p>
+      <p class="label">Examples</p>
+      <div class="chips" style="margin-top:8px">
+        <button class="btn ghost" data-s="Charged twice" data-b="I was charged twice for my subscription this month, please refund me. This is urgent." type="button">Billing</button>
+        <button class="btn ghost" data-s="App crashes" data-b="The application crashes every time I open the dashboard. Production is down, need help immediately." type="button">Outage</button>
+        <button class="btn ghost" data-s="Dark mode" data-b="It would be great if you added a dark mode. No rush, just a small suggestion." type="button">Idea</button>
+      </div>
+    </div>
+    <form class="composer" id="form">
+      <label class="f" for="subject">Subject</label>
+      <input id="subject" type="text" maxlength="300" value="App crashes">
+      <label class="f" for="body">Message</label>
+      <textarea id="body" maxlength="5000">The application crashes every time I open the dashboard. Production is down, need help immediately.</textarea>
+      <div style="margin-top:14px"><button class="btn" type="submit">Triage message</button></div>
+      <div class="verdict" id="verdict" hidden>
+        <span class="stamp" id="stamp"></span>
+        <span class="what" id="what"></span>
+        <span class="meta" id="meta"></span>
+      </div>
+    </form>
+  </section>
+
+  <section>
+    <div class="board-head">
+      <div><h2>Sorted inbox</h2><p class="label" id="count">Sample of 12 messages</p></div>
+      <div class="upload"><input id="file" type="file" accept=".csv" aria-label="CSV file with subject and body columns"><button class="btn ghost" id="upload" type="button">Sort a CSV</button></div>
+    </div>
+    <div class="lanes" id="lanes"></div>
+  </section>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x !== undefined) e.textContent = x; return e; };
+const pct = (x) => Math.round(x * 100) + "%";
+const nice = (s) => s.replace("_", " ");
+document.querySelectorAll(".chips .btn").forEach((b) => b.addEventListener("click", () => { $("subject").value = b.dataset.s; $("body").value = b.dataset.b; triage(); }));
+async function triage() {
+  const body = $("body").value.trim(); if (!body) { $("body").focus(); return; }
+  const r = await fetch("/predict", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ subject: $("subject").value, body }) });
+  if (!r.ok) return;
+  const d = await r.json();
+  $("verdict").hidden = false; $("stamp").textContent = d.priority; $("verdict").className = "verdict " + d.priority;
+  $("what").textContent = nice(d.category) + " (" + pct(d.category_confidence) + " sure)";
+  $("meta").textContent = "Reply within " + d.sla_hours + " h. Key words: " + (d.top_terms.join(", ") || "none");
+}
+function lanes(results) {
+  const box = $("lanes"); box.textContent = "";
+  ["urgent", "high", "medium", "low"].forEach((p) => {
+    const items = results.filter((x) => x.priority === p);
+    const lane = el("div", "lane " + p); const h = el("header"); h.append(el("b", "", p), el("span", "", items.length + " · " + (items[0] ? items[0].sla_hours : "-") + " h"));
+    lane.append(h);
+    items.forEach((x) => { const t = el("div", "tk " + p); t.append(el("strong", "", x.subject || x.body.slice(0, 60))); const r = el("div", "row"); r.append(el("span", "", nice(x.category)), el("span", "", pct(x.priority_confidence))); t.append(r); lane.append(t); });
+    box.append(lane);
+  });
+}
+async function sortFile(file) {
+  const fd = new FormData(); fd.append("file", file);
+  const r = await fetch("/predict/batch", { method: "POST", body: fd }); const d = await r.json();
+  if (!r.ok) { $("count").textContent = d.detail || "Could not read that file"; return; }
+  $("count").textContent = d.count + " messages"; lanes(d.results);
+}
+$("form").addEventListener("submit", (e) => { e.preventDefault(); triage(); });
+$("upload").addEventListener("click", () => { const f = $("file").files[0]; if (f) sortFile(f); else $("file").focus(); });
+(async () => { await triage(); const t = await (await fetch("/static/sample_tickets.csv")).blob(); sortFile(new File([t], "sample.csv")); })();
+</script>
+</body>
+</html>

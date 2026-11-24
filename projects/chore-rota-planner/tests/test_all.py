@@ -83,3 +83,11 @@ def test_api_validation():
     body = c.get("/sample").json()
     bad = {"people": body["people"][:2], "chores": body["chores"], "weeks": 4}
     assert c.post("/rota", json=bad).status_code == 422
+
+
+def test_index_has_error_text():
+    assert "Could not build the rota" in c.get("/").text
+
+
+def test_index_has_table_caption():
+    assert "Chore rota for eight weeks" in c.get("/").text

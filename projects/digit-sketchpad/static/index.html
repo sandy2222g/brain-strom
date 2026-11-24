@@ -30,12 +30,12 @@ window.addEventListener("pointerup",()=>down=false);
 g.addEventListener("keydown",e=>{if(e.key===" "||e.key==="Enter"){const i=+e.target.dataset.i;brush(i,px[i]===16?0:16);e.preventDefault()}});
 function schedule(){clearTimeout(t);t=setTimeout(guess,120)}
 async function guess(){if(!px.some(v=>v>0)){$("d").textContent="?";$("c").textContent="Draw something to begin.";$("b").innerHTML="";return}
-const r=await fetch("/predict",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pixels:px})});const d=await r.json();
+try{const r=await fetch("/predict",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pixels:px})});const d=await r.json();
 $("d").textContent=d.digit;$("c").textContent=`${Math.round(d.confidence*100)}% sure`;
-$("b").innerHTML=d.probabilities.map((p,i)=>`<div class="b"><span>${i}</span><i style="width:${Math.max(p*100,1)}%"></i><span>${Math.round(p*100)}%</span></div>`).join("")}
+$("b").innerHTML=d.probabilities.map((p,i)=>`<div class="b"><span>${i}</span><i style="width:${Math.max(p*100,1)}%"></i><span>${Math.round(p*100)}%</span></div>`).join("")}catch(e){$("c").textContent="Could not reach the classifier. Try again."}}
 $("clr").onclick=()=>{px.forEach((_,i)=>paint(i,0));guess()};
 $("smp").onclick=()=>{const s=samples[k++%samples.length];s.pixels.forEach((v,i)=>paint(i,v));guess()};
-(async()=>{samples=await (await fetch("/samples")).json();const m=await (await fetch("/metrics")).json();
+(async()=>{try{samples=await (await fetch("/samples")).json();const m=await (await fetch("/metrics")).json();
 $("m").innerHTML=`<b>Test accuracy ${(m.accuracy*100).toFixed(1)}%</b> on ${m.test_images} unseen scans (plain logistic regression: ${(m.logistic_regression_accuracy*100).toFixed(1)}%). If a digit is nudged one pixel diagonally, accuracy is <b>${(m.shifted_accuracy*100).toFixed(0)}%</b> with centring but only ${(m.shifted_accuracy_without_centring*100).toFixed(0)}% without it. Your finger-painted digits look different from scans, so expect some mistakes.`;
-samples[3].pixels.forEach((v,i)=>paint(i,v));guess()})();
+samples[3].pixels.forEach((v,i)=>paint(i,v));guess()}catch(e){$("m").textContent="Accuracy figures unavailable right now."}})();
 </script></body></html>

@@ -54,3 +54,13 @@ def test_curve_endpoint() -> None:
         assert pts[0]["retention"] == 1.0 and pts[-1]["retention"] < pts[1]["retention"]
         assert c.get("/curve", params={"stability": 0}).status_code == 422
         assert pytest.approx(pts[4]["retention"], abs=1e-3) == 0.3679
+
+
+def test_index_has_error_texts_and_dark_scheme():
+    from runway.api import app
+
+    with TestClient(app) as c:
+        page = c.get("/").text
+    assert "Could not plan your runway" in page
+    assert "Could not load the sample topics" in page
+    assert "prefers-color-scheme: dark" in page

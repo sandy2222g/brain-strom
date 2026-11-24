@@ -22,9 +22,9 @@ h1{font:400 clamp(2.6rem,10vw,5rem)/.95 "Bebas Neue";letter-spacing:.02em;margin
 <p class="legend">Filled chip = smart, plain = casual, dashed = goes with both. An outfit is a top, bottom and shoes of one style; layers multiply the count.</p></main>
 <script>
 const $=i=>document.getElementById(i);
-(async()=>{const d=await (await fetch("/sample")).json();const r=await (await fetch("/capsule",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({limit_g:d.limit_g,items:d.items})})).json();
+(async()=>{try{const d=await (await fetch("/sample")).json();const r=await (await fetch("/capsule",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({limit_g:d.limit_g,items:d.items})})).json();
 const by=Object.fromEntries(d.items.map(i=>[i.name,i]));const KS=["top","bottom","shoes","layer"];
 const T=[["in_order","Packed in listed order"],["lightest_first","Lightest first"],["best","Best capsule"]];
 $("tk").innerHTML=T.map(([k,t])=>{const x=r[k];return `<div class="t">${k=="best"?'<div class="stamp">BEST</div>':""}<div class="top"><small>${t}</small><div class="n ${k=="best"?"win":""}">${x.outfits}</div><span>outfits &middot; ${x.grams} of ${d.limit_g} g</span></div>
-<div class="body"><div class="g"><i style="width:${x.grams/d.limit_g*100}%"></i></div>${KS.map(s=>{const it=x.items.filter(n=>by[n].kind==s);return `<div class="k">${s}s (${it.length})</div><div class="chips">${it.map(n=>`<span class="chip ${by[n].style}">${n}</span>`).join("")||'<span class="chip" style="opacity:.5">none</span>'}</div>`}).join("")}</div></div>`}).join("")})();
+<div class="body"><div class="g" role="meter" aria-valuemin="0" aria-valuemax="${d.limit_g}" aria-valuenow="${x.grams}" aria-label="Weight used"><i style="width:${x.grams/d.limit_g*100}%"></i></div>${KS.map(s=>{const it=x.items.filter(n=>by[n].kind==s);return `<div class="k">${s}s (${it.length})</div><div class="chips">${it.map(n=>`<span class="chip ${by[n].style}">${n}</span>`).join("")||'<span class="chip" style="opacity:.5">none</span>'}</div>`}).join("")}</div></div>`}).join("");}catch(e){$("tk").innerHTML='<p class="legend">Could not build the capsule. Refresh to try again.</p>'}})();
 </script></body></html>

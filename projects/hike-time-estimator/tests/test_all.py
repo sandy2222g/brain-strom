@@ -65,3 +65,15 @@ def test_api():
     assert r["total_min"] == pytest.approx(243.5, abs=0.1)
     assert c.get("/").status_code == 200
     assert c.post("/estimate", json={**body, "points": body["points"][:1]}).status_code == 422
+
+
+def test_page_shows_error_message_when_fetch_fails():
+    assert "Could not estimate the hike" in c.get("/").text
+
+
+def test_warning_is_a_status_region():
+    assert 'id="warn" role="status"' in c.get("/").text
+
+
+def test_page_has_dark_colour_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text

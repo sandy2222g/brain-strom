@@ -75,3 +75,13 @@ def test_api():
     assert r["rows"][0]["fewest"]["coins"] == 3 and r["rows"][0]["greedy"]["coins"] == 6
     assert c.get("/").status_code == 200
     assert c.post("/change", json={"till": {}, "amounts": [5]}).status_code == 422
+
+
+def test_index_has_error_text_and_live_region():
+    page = TestClient(app).get("/").text
+    assert "Could not make change" in page
+    assert 'id="out" role="status"' in page
+
+
+def test_index_has_dark_scheme():
+    assert "prefers-color-scheme: dark" in TestClient(app).get("/").text

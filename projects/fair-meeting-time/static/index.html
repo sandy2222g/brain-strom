@@ -67,7 +67,7 @@ input[type=range], select { min-height:44px; accent-color:var(--accent); } selec
   <div class="scroll"><div class="tl"><div class="axis"><span></span><div><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00 UTC</span></div></div><div id="rows"></div></div></div>
   <div class="legend"><span><b style="background:var(--ok)"></b>working hours</span><span><b style="background:var(--mild)"></b>a bit outside</span><span><b style="background:var(--bad)"></b>well outside</span><span><b style="background:var(--sleep)"></b>sleeping</span></div></section>
   <section class="panel"><h2>Rotating the time</h2><div class="cmp"><div><p class="note" style="margin:0 0 6px">Pain added up over the weeks</p><div class="bars" id="rot"></div></div><div><p class="note" style="margin:0 0 6px">If the same best time is used every week</p><div class="bars" id="fix"></div></div></div>
-    <p id="verdict" style="margin:12px 0 10px"></p><div class="weeks" id="weeks-list"></div></section>
+    <p id="verdict" role="status" style="margin:12px 0 10px"></p><div class="weeks" id="weeks-list"></div></section>
   <p class="note">Invented team. Uses real time-zone rules, so daylight saving is respected. <a href="/docs">API docs</a></p>
 </main>
 <script>
@@ -93,15 +93,17 @@ let bandsCache = null;
 function redraw() { if (bandsCache) drawBands(bandsCache); }
 function bars(box, data, fixed) { box.textContent = ""; const mx = Math.max(...Object.values(data), 1); Object.entries(data).forEach(([n, v]) => { const d = el("div"); const i = el("i", fixed ? "f" : ""); i.style.setProperty("--w", (v / mx * 100) + "%"); d.append(el("span", "", n), i, el("span", "", String(Math.round(v)))); box.append(d); }); }
 async function refresh() {
+  try {
   $("o-dur").textContent = $("dur").value + " min"; $("o-fair").textContent = (+$("fair").value).toFixed(1); $("o-weeks").textContent = $("weeks").value;
   const [b, bands, rot] = await Promise.all([post("/best"), post("/bands"), post("/rotation")]); best = b; bandsCache = bands; chosen = Math.min(chosen, b.slots.length - 1);
   showOpts(); redraw(); const mx = Math.max(...Object.values(rot.cumulative), ...Object.values(rot.fixed_cumulative), 1);
   bars($("rot"), rot.cumulative, false); bars($("fix"), rot.fixed_cumulative, true);
   const v = $("verdict"); v.textContent = ""; v.append(el("span", "big", Math.round(rot.max_pain)), document.createTextNode(" is the most any one person carries with rotation, against "), el("b", "", String(Math.round(rot.fixed_max_pain))), document.createTextNode(" with a fixed time. The gap between the most and least burdened person is " + Math.round(rot.spread) + " against " + Math.round(rot.fixed_spread) + "."));
   const wl = $("weeks-list"); wl.textContent = ""; rot.weeks.forEach((s, i) => { const w = el("div", "week"); w.append(el("b", "", "Week " + (i + 1)), document.createTextNode(s.start_utc.slice(5, 10) + " " + s.start_utc.slice(11, 16) + " UTC")); wl.append(w); });
+  } catch (e) { $("warn").textContent = "Could not load meeting times. Try again."; }
 }
 ["dur", "fair", "weeks"].forEach((k) => $(k).addEventListener("change", refresh)); ["dur", "fair", "weeks"].forEach((k) => $(k).addEventListener("input", () => { $("o-dur").textContent = $("dur").value + " min"; $("o-fair").textContent = (+$("fair").value).toFixed(1); $("o-weeks").textContent = $("weeks").value; }));
-(async () => { sample = await (await fetch("/sample")).json(); await refresh(); })();
+(async () => { try { sample = await (await fetch("/sample")).json(); } catch (e) { $("warn").textContent = "Could not load meeting times. Try again."; return; } await refresh(); })();
 </script>
 </body>
 </html>

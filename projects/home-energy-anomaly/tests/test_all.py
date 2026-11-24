@@ -84,3 +84,11 @@ def test_api_params_and_validation():
     strict = c.get("/analyse", params={"threshold": 9.0, "min_run": 3}).json()
     assert len(loose["alerts"]) >= len(strict["alerts"])
     assert c.get("/analyse", params={"threshold": 0.1}).status_code == 422
+
+
+def test_page_shows_error_message_when_analyse_fails():
+    assert "Could not analyse the power data" in c.get("/").text
+
+
+def test_page_has_dark_colour_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text

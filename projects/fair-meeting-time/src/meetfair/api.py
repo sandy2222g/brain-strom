@@ -56,7 +56,7 @@ def health() -> dict[str, str]:
 
 @app.get("/sample")
 def sample() -> dict[str, Any]:
-    data: dict[str, Any] = json.loads(SAMPLE.read_text())
+    data: dict[str, Any] = json.loads(SAMPLE.read_text(encoding="utf-8"))
     return data
 
 

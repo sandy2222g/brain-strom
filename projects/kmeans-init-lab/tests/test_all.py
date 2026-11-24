@@ -53,3 +53,15 @@ def test_api():
     assert c.get("/cluster", params={"k": 0}).status_code == 422
     s = c.get("/summary").json()
     assert len(s["elbow"]) == 8 and set(s["inits"]) == {"random", "pp"} and c.get("/").status_code == 200
+
+
+def test_index_has_error_text():
+    assert "Could not run the clustering" in c.get("/").text
+
+
+def test_stat_is_a_live_region():
+    assert 'id="stat" aria-live="polite"' in c.get("/").text
+
+
+def test_index_has_dark_colour_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text

@@ -92,3 +92,19 @@ def test_api():
     assert len(g["frames"]) == 9 and g["info"]["kind"] == "spaceship"
     assert c.get("/life", params={"pattern": "x"}).status_code == 422
     assert len(c.get("/patterns").json()["patterns"]) == 7 and c.get("/").status_code == 200
+
+
+def test_index_has_rule_error_text():
+    assert "Could not load this rule" in c.get("/").text
+
+
+def test_index_has_pattern_error_text():
+    assert "Could not load this pattern" in c.get("/").text
+
+
+def test_index_has_dark_colour_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text
+
+
+def test_index_announces_rule_statistics():
+    assert 'id="stat" role="status"' in c.get("/").text

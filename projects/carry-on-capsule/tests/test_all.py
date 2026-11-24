@@ -78,3 +78,11 @@ def test_api():
 def test_api_validation():
     bad = {"limit_g": 1000, "items": [{"name": "x", "kind": "hat", "style": "smart", "g": 10}]}
     assert c.post("/capsule", json=bad).status_code == 422
+
+
+def test_index_has_error_text():
+    assert "Could not build the capsule" in c.get("/").text
+
+
+def test_weight_bar_is_a_meter():
+    assert 'role="meter"' in c.get("/").text

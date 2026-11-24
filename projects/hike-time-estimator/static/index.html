@@ -11,15 +11,20 @@ main{max-width:860px;margin:0 auto;padding:30px 16px}h1{margin:0;font:700 2rem G
 table{width:100%;border-collapse:collapse;margin-top:14px;font-size:.9rem}td,th{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line)}th{color:var(--mute);font-weight:normal;font-size:.75rem;text-transform:uppercase;letter-spacing:1px}
 .warn{margin-top:14px;border-left:5px solid var(--rust);background:#faf7ea;padding:10px 14px}
 @media(max-width:640px){.nums{grid-template-columns:repeat(2,1fr)}}
+@media (prefers-color-scheme: dark){
+:root{--bg:#1d1c14;--ink:#ece7d0;--moss:#8fa04f;--rust:#e0834f;--line:#4a4632;--mute:#b0a98a}
+.nums div,.card,.warn{background:#2a281c}
+#prof polyline{stroke:#8fa04f}
+}
 </style></head><body><main>
 <h1>Hike time estimator</h1><p id="sub"></p>
 <div class="nums" id="nums"></div>
 <div class="card"><svg id="prof" viewBox="0 0 800 240"></svg>
 <table><thead><tr><th>Leg</th><th>km</th><th>Climb</th><th>Time</th></tr></thead><tbody id="rows"></tbody></table></div>
-<div class="warn" id="warn"></div></main>
+<div class="warn" id="warn" role="status"></div></main>
 <script>
 const hm=m=>`${Math.floor(m/60)} h ${String(Math.round(m%60)).padStart(2,"0")} min`;
-(async()=>{
+(async()=>{try{
   const s=await (await fetch("/sample")).json();
   const {note,...body}=s;
   const r=await (await fetch("/estimate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})).json();
@@ -32,5 +37,5 @@ const hm=m=>`${Math.floor(m/60)} h ${String(Math.round(m%60)).padStart(2,"0")} m
   document.getElementById("prof").innerHTML=`<polygon points="${X(0)},${H-p} ${line} ${X(km)},${H-p}" fill="#5b6b2f33"/><polyline points="${line}" fill="none" stroke="#5b6b2f" stroke-width="3"/>`+P.map(x=>`<circle cx="${X(x.km)}" cy="${Y(x.height)}" r="4" fill="#b4532a"/>`).join("")+`<text x="${X(P[4].km)-20}" y="${Y(P[4].height)-10}" font-size="13">${P[4].name} ${P[4].height} m</text>`;
   document.getElementById("rows").innerHTML=r.legs.map(l=>`<tr><td>${l.from} to ${l.to}</td><td>${l.km}</td><td>${l.climb} m</td><td>${Math.round(l.minutes)} min</td></tr>`).join("");
   document.getElementById("warn").textContent=`Judging by distance alone you would plan ${hm(r.distance_only_min)}, which is ${Math.round(r.underestimate_min)} minutes too short. Set off by ${r.latest_start} to be down 30 minutes before sunset.`;
-})();
+}catch(e){document.getElementById("warn").textContent="Could not estimate the hike. Refresh to try again.";}})();
 </script></body></html>

@@ -64,3 +64,7 @@ def test_api():
 def test_api_validation():
     assert c.post("/compare", json={"cards": [], "days": 60}).status_code == 422
     assert c.post("/compare", json={"cards": [{"name": "a", "hardness": 1}], "days": 3}).status_code == 422
+
+
+def test_index_has_compare_error_text():
+    assert "Could not compare the schedules" in c.get("/").text

@@ -1,0 +1,40 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rate Limiter Lab</title>
+<style>
+:root{--bg:#1c1a17;--panel:#26231e;--ink:#f0e6d2;--allow:#ffb000;--deny:#ff5c5c;--dim:#9a8f7c;--edge:#3a352d;color-scheme:dark}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#f7f3ea;--panel:#ffffff;--ink:#2a2418;--allow:#c77d00;--deny:#d12f2f;--dim:#7a6e58;--edge:#e2d9c6;color-scheme:light}}
+:root[data-theme="light"]{--bg:#f7f3ea;--panel:#ffffff;--ink:#2a2418;--allow:#c77d00;--deny:#d12f2f;--dim:#7a6e58;--edge:#e2d9c6;color-scheme:light}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--ink);font:15px/1.5 Verdana,Geneva,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:26px 16px 40px}
+h1{margin:0;font-size:1.7rem;font-weight:700;letter-spacing:-.01em}
+h1 b{color:var(--allow)}
+.sub{color:var(--dim);margin:6px 0 18px;max-width:70ch}
+.bar{display:flex;gap:0;margin-bottom:18px;flex-wrap:wrap;border:1px solid var(--edge);border-radius:6px;width:max-content;max-width:100%;overflow:hidden}
+button{background:transparent;color:var(--ink);border:0;border-right:1px solid var(--edge);padding:7px 16px;cursor:pointer;font:inherit;font-size:14px}
+button:last-child{border-right:0}
+button.on{background:var(--allow);color:#1c1a17;font-weight:700}
+.lane{background:var(--panel);border:1px solid var(--edge);border-radius:6px;padding:12px 14px;margin-bottom:12px}
+.lane h2{margin:0 0 8px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px}
+.lane h2 span{color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;font-family:"Courier New",Courier,monospace;font-size:13px}
+canvas{width:100%;height:46px;display:block;border-radius:3px;background:var(--edge)}
+.why{color:var(--dim);font-size:13px;margin-top:6px}
+.key{color:var(--dim);font-size:13px;margin:0 0 14px}
+.key i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin:0 4px 0 10px}
+</style></head><body><main>
+<h1><b>Rate limiter</b> lab</h1><p class="sub">The same 60 seconds of traffic, limit 10 requests per 10 s.</p>
+<p class="key">Traffic pattern<span id="kh"></span><i style="background:var(--allow)"></i>allowed<i style="background:var(--deny)"></i>rejected</p>
+<div class="bar" id="kinds"></div><div id="lanes"></div>
+</main><script>
+const $=i=>document.getElementById(i);let kind='edge';
+const why={fixed_window:'Cheapest: one counter. But a burst on each side of a window edge slips through at double the limit.',sliding_log:'Exact: never more than the limit in any 10 s span. Costs memory for every timestamp.',token_bucket:'Allows a short burst then enforces the average rate. Used by most real APIs.'};
+const ALLOW='#ffb000',DENY='#ff5c5c';
+async function load(){const j=await (await fetch('/compare?kind='+kind)).json();
+document.querySelectorAll('#kinds button').forEach(b=>b.classList.toggle('on',b.dataset.k===kind));
+$('kh').textContent=' '+kind;
+$('lanes').innerHTML=j.rows.map(r=>`<div class="lane"><h2>${r.algorithm.replace('_',' ')}<span>allowed ${r.allowed} of ${r.requests}; worst 10 s span: ${r.worst_span} (limit ${r.limit})</span></h2><canvas data-a="${r.algorithm}" width="1000" height="46"></canvas><div class="why">${why[r.algorithm]}</div></div>`).join('');
+document.querySelectorAll('canvas').forEach(cv=>{const x=cv.getContext('2d'),tl=j.timeline[cv.dataset.a];j.times.forEach((t,i)=>{x.fillStyle=tl[i]?ALLOW:DENY;x.fillRect(t/60*996,tl[i]?4:24,3,18)})})}
+$('kinds').innerHTML=['edge','bursty','steady'].map(k=>`<button data-k="${k}">${k} traffic</button>`).join('');
+$('kinds').onclick=e=>{if(e.target.dataset.k){kind=e.target.dataset.k;load()}};load();
+</script></body></html>

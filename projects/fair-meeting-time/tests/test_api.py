@@ -40,3 +40,15 @@ def test_bands_cover_the_day() -> None:
         b = c.post("/bands", json=sample).json()
         assert set(b) == {p["name"] for p in sample["people"]} and all(len(v) == 48 for v in b.values())
         assert c.post("/bands", json={**sample, "duration_min": 20}).status_code == 422
+
+
+def test_index_has_error_text_and_live_verdict():
+    with TestClient(app) as c:
+        page = c.get("/").text
+    assert "Could not load meeting times" in page
+    assert 'id="verdict" role="status"' in page
+
+
+def test_sample_name_is_utf8():
+    with TestClient(app) as c:
+        assert "Tomás" in c.get("/sample").text
