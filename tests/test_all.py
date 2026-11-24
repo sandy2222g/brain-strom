@@ -67,3 +67,15 @@ def test_api():
     assert r2["fcfs"]["mean_ride"] == 11
     assert c.post("/compare", json={"trips": [{"time_s": 0, "origin": 1, "dest": 1}]}).status_code == 422
     assert c.get("/").status_code == 200
+
+
+def test_index_has_compare_error_text():
+    assert "Could not run the simulation" in c.get("/").text
+
+
+def test_index_announces_results():
+    assert 'id="bars" role="status"' in c.get("/").text
+
+
+def test_index_has_dark_colour_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text

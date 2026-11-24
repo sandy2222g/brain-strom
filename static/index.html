@@ -12,21 +12,22 @@ th{background:var(--line);color:var(--bg);text-transform:uppercase;font-size:12p
 td.best{background:#ffe2dc;font-weight:700}.bars{margin-top:22px}.g{margin:14px 0}.g h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;color:var(--steel)}
 .b{display:grid;grid-template-columns:80px 1fr 70px;gap:10px;align-items:center;margin:4px 0}.b i{display:block;height:16px;background:var(--steel)}.b i.w{background:var(--red)}
 .m{font-size:13px;color:var(--steel);margin-top:18px}
+@media (prefers-color-scheme: dark){:root{--bg:#14130f;--ink:#ecebe4;--red:#ff6b4a;--steel:#a7b1b7;--line:#ecebe4}table,input{background:#1d1c1a;color:var(--ink)}button{color:#14130f}td.best{background:#5a2a20;color:#fff}th{color:#14130f}}
 </style></head><body><main>
 <h1>Elevator <span>dispatch</span> sim</h1><p class="s">120 people, one lift, one 12-storey morning rush. Which dispatch rule makes people wait least?</p>
 <div class="ctl"><div><label>Floors</label><input id="f" type="number" value="12" min="2" max="40"></div>
 <div><label>Lift capacity</label><input id="c" type="number" value="8" min="1" max="20"></div><button id="go">Run simulation</button></div>
-<table><thead><tr><th>Policy</th><th>Mean wait</th><th>90th pct wait</th><th>Max wait</th><th>Mean ride</th><th>Finished</th></tr></thead><tbody id="t"></tbody></table>
-<div class="bars" id="bars"></div>
+<div style="overflow-x:auto"><table><thead><tr><th>Policy</th><th>Mean wait</th><th>90th pct wait</th><th>Max wait</th><th>Mean ride</th><th>Finished</th></tr></thead><tbody id="t"></tbody></table></div>
+<div class="bars" id="bars" role="status"></div>
 <p class="m">fcfs = serve the oldest request. nearest = go to the closest call. scan = sweep up and down like a real lift. Times in seconds. Synthetic arrivals; 2 s per floor, 5 s doors.</p></main>
 <script>
 const $=i=>document.getElementById(i);
-async function run(){
+async function run(){try{
 const r=(await (await fetch('/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({floors:+$('f').value,capacity:+$('c').value})})).json()).results;
 const names=Object.keys(r),best=(k)=>Math.min(...names.map(n=>r[n][k]));
 const cols=['mean_wait','p90_wait','max_wait','mean_ride','finish_s'];
 $('t').innerHTML=names.map(n=>`<tr><td>${n}</td>`+cols.map(k=>`<td class="${r[n][k]===best(k)?'best':''}">${r[n][k]}</td>`).join('')+'</tr>').join('');
 const grp=(k,t,cls)=>{const mx=Math.max(...names.map(n=>r[n][k]));return `<div class="g"><h3>${t}</h3>`+names.map(n=>`<div class="b"><span>${n}</span><i class="${cls}" style="width:${r[n][k]/mx*100}%"></i><span>${r[n][k]}s</span></div>`).join('')+'</div>'};
-$('bars').innerHTML=grp('mean_wait','Average wait for a lift','w')+grp('mean_ride','Average time inside the lift','');}
+$('bars').innerHTML=grp('mean_wait','Average wait for a lift','w')+grp('mean_ride','Average time inside the lift','');}catch(e){$('bars').innerHTML='<p>Could not run the simulation. Try again.</p>';}}
 $('go').onclick=run;run();
 </script></body></html>
