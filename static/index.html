@@ -13,19 +13,21 @@ main{max-width:980px;margin:auto}h1{font:700 40px "Georgia",serif;margin:0;color
 .k{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center;margin-bottom:10px}.k div{background:var(--tile);border-radius:8px;padding:6px 2px}.k b{display:block;font-size:20px;color:var(--herb)}.k small{font-size:11px;color:var(--mut);text-transform:uppercase}
 .cmp{font-size:13px;margin:4px 0}.cmp .bar{display:grid;grid-template-columns:70px 1fr 60px;gap:6px;align-items:center}.cmp i{display:block;height:9px;border-radius:5px}.cmp .s i{background:var(--herb)}.cmp .w i{background:var(--clay)}
 .m{margin-top:16px;font-size:13px;color:var(--mut)}
+@media (prefers-color-scheme: dark){:root{--tile:#16201a;--herb:#7fcf93;--clay:#ff9372;--ink:#e6efe8;--mut:#9fb1a4;--line:#2c3a30}.t,.card,.sv button{background:#1d2a21}.sv button.on{color:#16201a}}
 </style></head><body><main>
 <h1>Kitchen <em>Stock</em> Reorder</h1><p class="s">When should a small kitchen reorder, and how much? Tested on the last 30 days of invented demand.</p>
-<div class="sv"><span>Service level</span><button data-s="0.90">90%</button><button data-s="0.95" class="on">95%</button><button data-s="0.99">99%</button></div>
+<div class="sv"><span>Service level</span><button data-s="0.90" aria-pressed="false">90%</button><button data-s="0.95" class="on" aria-pressed="true">95%</button><button data-s="0.99" aria-pressed="false">99%</button></div>
 <div class="tot" id="tot"></div><div class="items" id="it"></div>
 <p class="m">Smart = reorder when stock plus orders on the way falls to the reorder point, then top up. Weekly = every Monday, order last week's total. Waste = units that passed their shelf life.</p></main>
 <script>
 const $=i=>document.getElementById(i);
-async function go(s){const e=await (await fetch('/evaluation?service='+s)).json(),t=e.totals;
+async function go(s){try{const e=await (await fetch('/evaluation?service='+s)).json(),t=e.totals;
 $('tot').innerHTML=`<div class="t"><h2>Days a shelf ran empty (30 days x 5 items)</h2><b class="a">${t.smart.short_days}</b> smart <b class="b" style="margin-left:14px">${t.weekly.short_days}</b> weekly</div><div class="t"><h2>Money thrown away</h2><b class="a">$${t.smart.waste_cost}</b> smart <b class="b" style="margin-left:14px">$${t.weekly.waste_cost}</b> weekly</div>`;
 const mx=Math.max(...e.items.map(r=>Math.max(r.smart.avg_stock,r.weekly.avg_stock)));
 $('it').innerHTML=e.items.map(r=>`<div class="card"><h3>${r.name}<span>${r.plan.mean}/day &plusmn;${r.plan.sd}</span></h3>
 <div class="k"><div><b>${Math.round(r.plan.reorder_point)}</b><small>reorder at</small></div><div><b>${Math.round(r.plan.order_up_to)}</b><small>top up to</small></div><div><b>${Math.round(r.plan.safety)}</b><small>safety stock</small></div></div>
-<div class="cmp"><div class="bar s"><span>smart</span><i style="width:${r.smart.avg_stock/mx*100}%"></i><span>${r.smart.avg_stock}</span></div><div class="bar w"><span>weekly</span><i style="width:${r.weekly.avg_stock/mx*100}%"></i><span>${r.weekly.avg_stock}</span></div><div style="color:#778379;margin-top:2px">average units on the shelf</div>
+<div class="cmp"><div class="bar s"><span>smart</span><i style="width:${r.smart.avg_stock/mx*100}%"></i><span>${r.smart.avg_stock}</span></div><div class="bar w"><span>weekly</span><i style="width:${r.weekly.avg_stock/mx*100}%"></i><span>${r.weekly.avg_stock}</span></div><div style="color:var(--mut);margin-top:2px">average units on the shelf</div>
 <div style="margin-top:6px">Empty days: <b>${r.smart.short_days}</b> vs ${r.weekly.short_days} &middot; waste: <b>$${r.smart.waste_cost}</b> vs $${r.weekly.waste_cost}</div></div></div>`).join('')}
-document.querySelector('.sv').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;document.querySelectorAll('.sv button').forEach(x=>x.classList.toggle('on',x===b));go(b.dataset.s)};go(0.95);
+catch(e){$('tot').innerHTML='<div class="t">Could not load the stock plan. Refresh to try again.</div>';$('it').innerHTML='';}}
+document.querySelector('.sv').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;document.querySelectorAll('.sv button').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on)});go(b.dataset.s)};go(0.95);
 </script></body></html>
