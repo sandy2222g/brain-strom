@@ -91,3 +91,9 @@ def test_api_validation():
     }
     assert c.post("/plan", json=bad).status_code == 422
     assert c.post("/plan", json={"capacity": {}, "dishes": []}).status_code == 422
+
+
+def test_index_has_plan_error_text():
+    page = c.get("/").text
+    assert "Could not plan dinner" in page
+    assert page.count("aria-live") + page.count('role="status"') <= 2

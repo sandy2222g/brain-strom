@@ -10,7 +10,7 @@ main{max-width:1040px;margin:auto;padding:24px 16px 56px}h1{font:400 clamp(2.2re
 svg{width:100%;min-width:680px;height:auto;display:block}.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.82rem;margin-top:6px}.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:middle}
 </style></head><body><main>
 <h1>Dinner On Time</h1><p class="sub">Five dishes, one oven, one pair of hands. Every step is scheduled backwards from serving so it all lands together.</p>
-<div class="stats" id="st" aria-live="polite"></div>
+<div class="stats" id="st" aria-live="polite"></div><p id="planerr" role="status"></p>
 <div class="panel"><h2>Plan: times are minutes before serving</h2><svg id="a" viewBox="0 0 720 230" role="img" aria-label="Synced timeline by resource"></svg><div class="legend" id="lg"></div></div>
 <div class="panel"><h2>Instead: start everything now, in the order written</h2><svg id="b" viewBox="0 0 720 230" role="img" aria-label="Sequential timeline by resource"></svg></div></main>
 <script>
@@ -22,9 +22,9 @@ for(let m=0;m<=max;m+=30)g+=`<text x="${X(m)}" y="222" font-size="10" text-ancho
 const lanes={};slots.forEach(s=>{const k=s.resource;lanes[k]=lanes[k]||[];let row=0;while(lanes[k].some(o=>o.row===row&&o.s.end<s.start&&s.end<o.s.start))row++;lanes[k].push({s,row});
 const w=X(s.end)-X(s.start),y=Y(k)+row*18;g+=`<rect x="${X(s.start)}" y="${y}" width="${Math.max(w-1,2)}" height="16" rx="3" fill="${COL[s.dish]||"#888"}"><title>${s.dish}: ${s.step} (${s.start-s.end} min)</title></rect>`;if(w>46)g+=`<text x="${X(s.start)+4}" y="${y+12}" font-size="9" fill="#fff" font-weight="700">${s.dish.split(" ")[1]||s.dish}</text>`});
 $(el).innerHTML=g}
-(async()=>{const s=await (await fetch("/sample")).json();const r=await (await fetch("/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({capacity:s.capacity,dishes:s.dishes})})).json();
+(async()=>{try{const s=await (await fetch("/sample")).json();const r=await (await fetch("/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({capacity:s.capacity,dishes:s.dishes})})).json();
 const mx=Math.max(r.synced.span,r.sequential.span);
 $("st").innerHTML=`<div class="s"><b>${r.synced.span} min</b><span>start to serve, synced</span></div><div class="s"><b>${r.sequential.span} min</b><span>start to serve, in order written</span></div><div class="s"><b>${r.synced.waiting}</b><span>minutes food waits, synced</span></div><div class="s"><b>${r.sequential.waiting}</b><span>minutes food waits, in order written</span></div>`;
 draw("a",r.synced.slots,mx);draw("b",r.sequential.slots,mx);
-$("lg").innerHTML=Object.entries(COL).map(([k,c])=>`<span><i style="background:${c}"></i>${k}</span>`).join("")})();
+$("lg").innerHTML=Object.entries(COL).map(([k,c])=>`<span><i style="background:${c}"></i>${k}</span>`).join("")}catch(e){$("planerr").textContent="Could not plan dinner. Refresh to try again."}})();
 </script></body></html>
