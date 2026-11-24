@@ -13,13 +13,13 @@ h1{font:800 clamp(2.2rem,8vw,3.8rem)/1 Spectral;margin:0}.sub{color:var(--mute);
 @keyframes in{from{opacity:0;transform:translateX(-6px)}}@media(prefers-reduced-motion:reduce){*{animation:none!important}}
 </style></head><body><main>
 <h1>Day Boxes</h1><p class="sub">Nine tasks, four meetings, one day. The most valuable set that really fits, drawn on the timeline.</p>
-<div class="stats" id="st" aria-live="polite"></div><div class="day" id="d" role="img" aria-label="Day timeline"></div><p class="drop" id="dr"></p></main>
+<div class="stats" id="st" aria-live="polite"></div><p id="planerr"></p><div class="day" id="d" role="img" aria-label="Day timeline"></div><p class="drop" id="dr"></p></main>
 <script>
 const $=i=>document.getElementById(i),H=640/9,Y=t=>(t-9)*H,tm=s=>{const [a,b]=s.split(":").map(Number);return a+b/60};
-(async()=>{const s=await (await fetch("/sample")).json();const r=await (await fetch("/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(s)})).json();
+(async()=>{try{const s=await (await fetch("/sample")).json();const r=await (await fetch("/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(s)})).json();
 $("st").innerHTML=`<div class="s"><b>${r.priority}</b><span>priority points scheduled</span></div><div class="s"><b>${r.in_order_priority}</b><span>doing them in the order written</span></div><div class="s"><b>${r.plan.length}/${s.tasks.length}</b><span>tasks fit</span></div><div class="s"><b>${r.free_hours} h</b><span>free time</span></div>`;
 let h="";for(let t=9;t<=18;t++)h+=`<div class="hr" style="top:${Y(t)}px">${String(t).padStart(2,"0")}:00</div>`;
 s.events.forEach(e=>h+=`<div class="blk ev" style="top:${Y(e.start)}px;height:${(e.end-e.start)*H-2}px">${e.title}</div>`);
 r.plan.forEach((p,i)=>h+=`<div class="blk tk p${p.priority}" style="top:${Y(tm(p.start))}px;height:${(tm(p.end)-tm(p.start))*H-2}px;background:var(--p${p.priority});animation-delay:${i*50}ms">${p.title} <small>(${p.start}-${p.end}, priority ${p.priority})</small></div>`);
-$("d").innerHTML=h;$("dr").innerHTML=r.dropped.length?`Left for another day: <b>${r.dropped.join(", ")}</b>`:"Everything fits."})();
+$("d").innerHTML=h;$("dr").innerHTML=r.dropped.length?`Left for another day: <b>${r.dropped.join(", ")}</b>`:"Everything fits."}catch(e){$("planerr").textContent="Could not build the day plan. Refresh to try again."}})();
 </script></body></html>

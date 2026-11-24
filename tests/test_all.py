@@ -117,3 +117,9 @@ def test_api_validation():
         "tasks": [{"title": "a", "minutes": 10, "priority": 3}],
     }
     assert c.post("/plan", json=bad).status_code == 422
+
+
+def test_index_has_plan_error_text():
+    page = c.get("/").text
+    assert "Could not build the day plan" in page
+    assert 'id="planerr"' in page
