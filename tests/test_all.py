@@ -80,3 +80,10 @@ def test_api():
     assert r["plans"]["avalanche"]["months"] == 27
     assert c.get("/").status_code == 200
     assert c.post("/compare", json={"budget": 10, "debts": DEBTS}).status_code == 422
+
+
+def test_index_has_error_texts_and_live_kpi():
+    page = c.get("/").text
+    assert "Could not compare the plans" in page
+    assert "Could not load the sample debts" in page
+    assert 'id="kpi" role="status"' in page
