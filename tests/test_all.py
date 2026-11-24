@@ -72,3 +72,19 @@ def test_presets_and_api():
     assert r["p_exact"] == "51/100" and r["mean"] == 13.82
     assert c.get("/odds", params={"expr": "oops"}).status_code == 422
     assert len(c.get("/presets").json()["presets"]) == 6 and c.get("/").status_code == 200
+
+
+def test_index_guards_stale_responses():
+    assert "const my=++seq" in c.get("/").text
+
+
+def test_index_has_error_text():
+    assert "Could not compute the odds" in c.get("/").text
+
+
+def test_index_has_light_scheme():
+    assert "prefers-color-scheme: light" in c.get("/").text
+
+
+def test_odds_expr_length_is_capped():
+    assert c.get("/odds", params={"expr": "1d6+" * 20 + "1"}).status_code == 422

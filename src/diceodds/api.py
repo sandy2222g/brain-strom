@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 
 from . import core
@@ -24,7 +24,7 @@ def presets() -> dict[str, object]:
 
 
 @app.get("/odds")
-def odds(expr: str, target: int | None = None) -> dict[str, object]:
+def odds(expr: str = Query(..., max_length=60), target: int | None = None) -> dict[str, object]:
     try:
         return core.analyse(expr, target)
     except core.DiceError as e:
