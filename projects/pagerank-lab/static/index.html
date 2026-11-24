@@ -11,14 +11,15 @@ main{max-width:880px;margin:0 auto;padding:22px 18px}.card{background:var(--card
 .row{display:grid;grid-template-columns:110px 1fr 150px;gap:10px;align-items:center;margin:6px 0;font-size:14px}
 .bars{display:flex;flex-direction:column;gap:3px}.b1{height:12px;background:var(--brick)}.b2{height:6px;background:var(--slate)}
 .num{font-variant-numeric:tabular-nums;color:var(--slate);font-size:13px}.note{font-size:14px;color:var(--slate);margin-top:14px}
+@media (prefers-color-scheme: dark){body{background:#15161c;color:#eceef5}header{background:#1d2230}header h1{color:#f3e8dd}header p,header .sub{color:#c4d0e6;opacity:1}.card{color:#1d2433}}
 </style></head><body><header><div><h1>PageRank lab</h1><p class="sub">Which pages of a small town's websites matter most? It is not about how many links a page gets, but who links to it.</p></div></header>
 <main><div class="card"><div class="head"><label>damping <input id="d" type="range" min="0" max="0.99" step="0.01" value="0.85"> <b id="dv">0.85</b></label>
 <span class="legend"><i style="background:#b5412f"></i>PageRank<i style="background:#4d6379"></i>links in</span></div><div id="rows"></div>
-<p class="note" id="n"></p></div></main><script>
+<p class="note" id="n"></p></div><p id="note" role="status"></p></main><script>
 const $=i=>document.getElementById(i);
-async function load(){const d=$('d').value;$('dv').textContent=d;const j=await (await fetch('/town?damping='+d)).json();
+async function load(){try{const d=$('d').value;$('dv').textContent=d;const j=await (await fetch('/town?damping='+d)).json();
 const deg=Object.fromEntries(j.indegree.map(x=>[x.page,x.links_in])),mx=Math.max(...j.pagerank.map(x=>x.score));
 $('rows').innerHTML=j.pagerank.map(x=>`<div class="row"><span>${x.page}</span><div class="bars"><div class="b1" style="width:${x.score/mx*100}%"></div><div class="b2" style="width:${deg[x.page]/8*100}%"></div></div><span class="num">${(x.score*100).toFixed(1)}%  |  ${deg[x.page]} in</span></div>`).join('');
-$('n').textContent='Look at the clinic: one link in, yet it outranks the sports club with three, because its single link comes from the town hall. At damping 0 every page scores the same; raising it lets the link structure matter more.'}
+$('n').textContent='Look at the clinic: one link in, yet it outranks the sports club with three, because its single link comes from the town hall. At damping 0 every page scores the same; raising it lets the link structure matter more.'}catch(e){$('note').textContent='Could not load the town graph. Try again.'}}
 $('d').oninput=load;load();
 </script></body></html>

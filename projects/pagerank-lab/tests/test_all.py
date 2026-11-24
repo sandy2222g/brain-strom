@@ -64,3 +64,9 @@ def test_api():
     assert r["pagerank"][0]["score"] == 0.5
     assert c.post("/rank", json={"links": {}}).status_code == 422
     assert c.get("/town", params={"damping": 1}).status_code == 422 and c.get("/").status_code == 200
+
+
+def test_index_has_town_error_text_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not load the town graph" in page
+    assert "prefers-color-scheme: dark" in page
