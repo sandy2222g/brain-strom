@@ -72,3 +72,15 @@ def test_api():
     assert r["height_saved"] == 18.0
     assert c.get("/").status_code == 200
     assert c.post("/fill", json={"shelf_width": 1, "books": BOOKS}).status_code == 422
+
+
+def test_index_has_error_text():
+    assert "Could not load the sample shelf" in c.get("/").text
+
+
+def test_index_has_light_scheme():
+    assert "prefers-color-scheme: light" in c.get("/").text
+
+
+def test_shelf_width_input_is_positive():
+    assert 'min="1"' in c.get("/").text
