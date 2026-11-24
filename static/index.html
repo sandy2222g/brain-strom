@@ -2,23 +2,54 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quick Event Parser</title>
 <style>
-:root{--bg:#fff;--ink:#000;--red:#e8001c;--mute:#777;--rule:#000}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif}
-main{max-width:900px;margin:0 auto;padding:28px 18px}h1{margin:0;font-size:3rem;line-height:1;letter-spacing:-2px;font-weight:900}h1 span{color:var(--red)}p{color:var(--mute)}
-.ev{display:grid;grid-template-columns:90px 1fr 130px;gap:14px;border-top:3px solid var(--rule);padding:14px 0;align-items:center}
-.d{font-size:2.6rem;font-weight:900;line-height:1;color:var(--red)}.d small{display:block;font-size:.75rem;color:var(--ink);letter-spacing:1px;text-transform:uppercase;font-weight:700}
-.t{font-weight:700;font-size:1.15rem}.src{color:var(--mute);font-size:.85rem}.time{text-align:right;font-weight:900;font-size:1.4rem}.time small{display:block;font-size:.75rem;color:var(--mute);font-weight:400}
-.warn{color:var(--red)}
-@media(max-width:560px){.ev{grid-template-columns:70px 1fr}.time{grid-column:2;text-align:left}}
+:root{--bg:#f5f3ff;--surface:#ffffff;--ink:#1f1640;--accent:#6d28d9;--warn:#b45309;--warn-bg:#fef3c7;--rule:#c4b5fd;--mute:#6b5f8f;color-scheme:light}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15112a;--surface:#1d1838;--ink:#ece8ff;--accent:#a78bfa;--warn:#fbbf24;--warn-bg:#3a2e0c;--rule:#3b3166;--mute:#a79bd0;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15112a;--surface:#1d1838;--ink:#ece8ff;--accent:#a78bfa;--warn:#fbbf24;--warn-bg:#3a2e0c;--rule:#3b3166;--mute:#a79bd0;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--ink);font:15px/1.5 Consolas,"Cascadia Mono","Liberation Mono",Menlo,monospace}
+main{max-width:860px;margin:0 auto;padding:26px 16px 40px}
+.head{border-bottom:2px solid var(--accent);padding-bottom:12px;margin-bottom:8px}
+h1{margin:0;font-size:1.6rem;font-weight:700;letter-spacing:-.02em}
+h1 span{color:var(--accent)}
+#sub{margin:6px 0 0;color:var(--mute);font-size:.92rem}
+#out{position:relative}
+.ev{position:relative;display:grid;grid-template-columns:96px 1fr auto;gap:16px;padding:16px 0 16px 28px;border-bottom:1px dashed var(--rule);align-items:start}
+.ev::before{content:"";position:absolute;left:6px;top:0;bottom:0;width:2px;background:var(--rule)}
+.ev::after{content:"";position:absolute;left:1px;top:22px;width:12px;height:12px;border-radius:2px;background:var(--accent)}
+.ev.nodate::after{background:var(--warn)}
+.d{font-size:1.9rem;font-weight:700;line-height:1;color:var(--accent)}
+.d small{display:block;margin-top:6px;font-size:.7rem;color:var(--mute);text-transform:uppercase;letter-spacing:.08em}
+.t{font-weight:700;font-size:1.02rem;overflow-wrap:anywhere}
+.src{margin-top:4px;color:var(--mute);font-size:.82rem;overflow-wrap:anywhere}
+.time{white-space:nowrap;padding:4px 10px;border-radius:999px;border:1px solid var(--accent);color:var(--accent);font-weight:700;font-size:.95rem;text-align:center}
+.time small{display:block;font-size:.68rem;font-weight:400;color:var(--mute)}
+.time.warn{border-style:dashed;border-color:var(--warn);color:var(--warn);background:var(--warn-bg)}
+@media(max-width:560px){.ev{grid-template-columns:72px 1fr;padding-left:24px}.time{grid-column:2;justify-self:start}.d{font-size:1.5rem}}
 </style></head><body><main>
-<h1>Say it.<br><span>Schedule it.</span></h1><p id="sub"></p><div id="out"></div></main>
+<header class="head"><h1>Say it. <span>Schedule it.</span></h1><p id="sub"></p></header>
+<section id="out" aria-live="polite"></section>
+</main>
 <script>
 const M=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n};
 (async()=>{
   const s=await (await fetch("/sample")).json();
   const r=await (await fetch("/parse",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sentences:s.sentences,today:s.today})})).json();
   document.getElementById("sub").textContent=`Today is ${s.today}. Seven sentences, parsed with plain rules.`;
-  document.getElementById("out").innerHTML=r.events.map(e=>{const d=e.date?new Date(e.date+"T00:00"):null;
-   return `<div class="ev"><div class="d">${d?d.getDate():"?"}<small>${d?M[d.getMonth()]+" · "+e.weekday.slice(0,3):"no date"}</small></div><div><div class="t">${e.title}</div><div class="src">“${e.text}”</div></div><div class="time ${e.time?"":"warn"}">${e.time||"no time"}<small>${e.duration_min?e.duration_min+" min":""}</small></div></div>`}).join("");
+  const out=document.getElementById("out");
+  for(const e of r.events){
+    const d=e.date?new Date(e.date+"T00:00"):null;
+    const row=el("div",d?"ev":"ev nodate");
+    const day=el("div","d",d?String(d.getDate()):"?");
+    day.appendChild(el("small",null,d?M[d.getMonth()]+" · "+e.weekday.slice(0,3):"no date"));
+    const body=el("div");
+    body.appendChild(el("div","t",e.title));
+    body.appendChild(el("div","src","“"+e.text+"”"));
+    const time=el("div",e.time?"time":"time warn",e.time||"no time");
+    if(e.duration_min)time.appendChild(el("small",null,e.duration_min+" min"));
+    row.append(day,body,time);
+    out.appendChild(row);
+  }
 })();
 </script></body></html>
