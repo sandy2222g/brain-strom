@@ -61,5 +61,13 @@ def test_api():
     r = c.post("/check", json=c.get("/sample").json()).json()
     assert r["shortfalls"] and r["fix"]["shortfalls"] == []
     assert c.get("/").status_code == 200
+
+
+def test_index_has_error_text():
+    assert "Could not load the plan" in c.get("/").text
+
+
+def test_index_has_dark_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text
     bad = {"days": 5, "opening_balance": 0, "income": [], "bills": [{"name": "x", "day": 9, "amount": 1}]}
     assert c.post("/check", json=bad).status_code == 422

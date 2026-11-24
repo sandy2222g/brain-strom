@@ -3,6 +3,7 @@
 <title>Bill Timing Planner</title>
 <style>
 :root{--bg:#ece8e1;--ink:#1c1c1c;--coral:#e8553d;--ok:#2b7a5b;--mute:#6f6a60;--card:#faf8f4}
+@media (prefers-color-scheme: dark){:root{--bg:#16181b;--ink:#ece8e1;--card:#22252a;--mute:#b5b0a6;--coral:#ff7a63;--ok:#5fc294}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Palatino Linotype",Palatino,serif}
 main{max-width:860px;margin:0 auto;padding:30px 16px}h1{margin:0;font-size:2rem}p{color:var(--mute)}
 .card{background:var(--card);padding:16px;border-radius:4px;margin:16px 0;box-shadow:0 1px 0 #cfc9bd}
@@ -17,14 +18,18 @@ li{margin:4px 0}.tag{color:var(--ok);font-weight:bold}
 function draw(id,bal,col){
   const W=800,H=220,p=28,lo=Math.min(0,...bal),hi=Math.max(...bal),x=i=>p+i*(W-2*p)/(bal.length-1),y=v=>H-p-(v-lo)*(H-2*p)/(hi-lo);
   const pts=bal.map((v,i)=>`${x(i)},${y(v)}`).join(" ");
-  document.getElementById(id).innerHTML=`<rect class="neg" x="${p}" y="${y(0)}" width="${W-2*p}" height="${Math.max(0,H-p-y(0))}"/><line class="axis" x1="${p}" x2="${W-p}" y1="${y(0)}" y2="${y(0)}"/><polyline fill="none" stroke="${col}" stroke-width="3" points="${pts}"/><text x="${p}" y="14" font-size="12" fill="#6f6a60">${Math.round(hi)}</text><text x="${p}" y="${H-6}" font-size="12" fill="#6f6a60">${Math.round(lo)}</text>`;
+  document.getElementById(id).innerHTML=`<rect class="neg" x="${p}" y="${y(0)}" width="${W-2*p}" height="${Math.max(0,H-p-y(0))}"/><line class="axis" x1="${p}" x2="${W-p}" y1="${y(0)}" y2="${y(0)}"/><polyline fill="none" stroke="${col}" stroke-width="3" points="${pts}"/><text x="${p}" y="14" font-size="12" style="fill:var(--mute)">${Math.round(hi)}</text><text x="${p}" y="${H-6}" font-size="12" style="fill:var(--mute)">${Math.round(lo)}</text>`;
 }
 (async()=>{
-  const s=await (await fetch("/sample")).json();
-  const r=await (await fetch("/check",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(s)})).json();
-  draw("a",r.balances,"#e8553d");draw("b",r.fix.balances,"#2b7a5b");
-  const d=r.shortfalls.map(x=>x.day);
-  document.getElementById("ta").textContent=`Overdrawn on ${d.length} days (first on day ${d[0]}), lowest ${Math.min(...r.shortfalls.map(x=>x.balance))}.`;
-  document.getElementById("tb").innerHTML=Object.entries(r.fix.moves).map(([k,v])=>`<li>Move <b>${k.replace("@"," due day ")}</b> to day ${v}</li>`).join("")+`<li class="tag">${r.fix.shortfalls.length?"Still overdrawn":"No overdrawn days"}</li>`;
+  try{
+    const s=await (await fetch("/sample")).json();
+    const r=await (await fetch("/check",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(s)})).json();
+    draw("a",r.balances,"#e8553d");draw("b",r.fix.balances,"#2b7a5b");
+    const d=r.shortfalls.map(x=>x.day);
+    document.getElementById("ta").textContent=`Overdrawn on ${d.length} days (first on day ${d[0]}), lowest ${Math.min(...r.shortfalls.map(x=>x.balance))}.`;
+    document.getElementById("tb").innerHTML=Object.entries(r.fix.moves).map(([k,v])=>`<li>Move <b>${k.replace("@"," due day ")}</b> to day ${v}</li>`).join("")+`<li class="tag">${r.fix.shortfalls.length?"Still overdrawn":"No overdrawn days"}</li>`;
+  }catch(e){
+    document.getElementById("ta").textContent="Could not load the plan. Refresh to try again.";
+  }
 })();
 </script></body></html>
