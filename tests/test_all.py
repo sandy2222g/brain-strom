@@ -66,3 +66,15 @@ def test_api():
     assert r["best"]["difference"] == 100 and r["alternating_over_limit"] == ["weight_a"]
     assert c.get("/").status_code == 200
     assert c.post("/balance", json={"items": [{"name": "a", "g": 1}]}).status_code == 422
+
+
+def test_index_has_error_text():
+    assert "Could not load the balance" in c.get("/").text
+
+
+def test_index_has_dark_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text
+
+
+def test_results_are_announced():
+    assert c.get("/").text.count('role="status"') >= 2
