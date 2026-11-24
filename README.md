@@ -1,2 +1,2 @@
-# brain-strome
-Private repo for Brain Strome
+# brain-strom
+Private repo for Brain Strom
