@@ -9,15 +9,16 @@ main{max-width:980px;margin:auto}h1{font:700 26px "Georgia",serif;margin:0 0 2px
 td{border:1px solid #cfdcd2;padding:0;min-width:104px}td input{width:100%;border:0;padding:6px 8px;font:inherit;background:transparent;outline:none;text-align:right}td.t input{text-align:left;font-weight:600}
 td.sel{background:var(--sel)}td.dep{background:var(--dep)}td.err input{color:var(--err);font-weight:700}
 .m{margin-top:12px;color:var(--mut);font-size:13px}code{background:#fff;padding:1px 5px;border-radius:3px;border:1px solid #cfdcd2}
+@media (prefers-color-scheme: dark){:root{--bg:#1c1b19;--ink:#eeeeea}h1{color:#8fd1a8}p{color:#b9c9bf}}
 </style></head><body><main>
 <h1>Mini Spreadsheet</h1><p class="s">A formula engine in Python. Click a cell to see its formula and the cells it depends on. Edit anything: everything downstream recalculates.</p>
 <div class="fx"><b>fx</b><input id="fb" placeholder="select a cell" autocomplete="off"></div>
-<div class="wrap"><table id="tb"></table></div>
+<div class="wrap"><table id="tb"></table></div><p id="sheeterr" role="status"></p>
 <p class="m">Try <code>=SUM(B2:D2)</code>, <code>=AVG(B3:B5)</code>, <code>=B8*0.1</code>, <code>=ROUND(F7*100,1)</code>, or make a loop: set B2 to <code>=B6</code> to see <code>#CYCLE</code> spread.</p></main>
 <script>
 const $=i=>document.getElementById(i);const COLS='ABCDEFG'.split(''),ROWS=[1,2,3,4,5,6,7,8,9,10];let cells={},V={},deps={},sel=null;
 const fmt=v=>typeof v==='number'?(Number.isInteger(v)?String(v):String(+v.toFixed(3))):v;
-async function calc(){const r=await fetch('/evaluate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cells})});const j=await r.json();V=j.values;deps=j.deps;paint()}
+async function calc(){try{const r=await fetch('/evaluate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cells})});const j=await r.json();V=j.values;deps=j.deps;paint()}catch(e){$('sheeterr').textContent='Could not recalculate the sheet. Try again.'}}
 function paint(){const d=new Set(deps[sel]||[]);
 document.querySelectorAll('td[data-c]').forEach(td=>{const k=td.dataset.c,i=td.firstChild,v=V[k];
 if(document.activeElement!==i)i.value=v===undefined?'':fmt(v);
@@ -29,5 +30,5 @@ i.onfocus=()=>{sel=k;i.value=cells[k]||'';$('fb').value=cells[k]||'';paint()};
 i.onblur=()=>{i.value=V[k]===undefined?'':fmt(V[k])};
 i.oninput=()=>{if(i.value==='')delete cells[k];else cells[k]=i.value;$('fb').value=i.value;calc()}})}
 $('fb').oninput=()=>{if(!sel)return;if($('fb').value==='')delete cells[sel];else cells[sel]=$('fb').value;const i=document.querySelector(`td[data-c="${sel}"] input`);i.value=$('fb').value;calc()};
-fetch('/sample').then(r=>r.json()).then(d=>{cells=d.cells;build();calc().then(()=>{document.querySelector('td[data-c="E6"] input').focus()})});
+fetch('/sample').then(r=>r.json()).then(d=>{cells=d.cells;build();calc().then(()=>{document.querySelector('td[data-c="E6"] input').focus()})}).catch(()=>{$('sheeterr').textContent='Sample sheet is unavailable right now.'});
 </script></body></html>

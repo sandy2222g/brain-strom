@@ -91,3 +91,9 @@ def test_api():
     assert r["values"]["E6"] == 3770
     assert c.post("/evaluate", json={"cells": {"ZZ": "1"}}).status_code == 422
     assert c.get("/").status_code == 200
+
+
+def test_index_has_sheet_error_texts_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not recalculate the sheet" in page and "Sample sheet is unavailable" in page
+    assert "prefers-color-scheme: dark" in page
