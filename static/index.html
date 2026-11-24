@@ -14,22 +14,23 @@ select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:
 .pr{text-align:center;margin-top:10px}.pr b{font:800 52px "Arial Black",sans-serif;color:var(--navy);line-height:1}.pr small{display:block;color:var(--mut)}
 .pbar{height:16px;border-radius:8px;background:#e9e6d6;overflow:hidden;margin-top:10px}.pbar i{display:block;height:100%;background:var(--ball);border-right:3px solid var(--navy)}
 .m{font-size:13px;color:var(--mut)}.m b{color:var(--ink)}
+@media (prefers-color-scheme: dark){:root{--bg:#12151d;--navy:#0b1224;--ball:#d7e84a;--ink:#eceff6;--mut:#a3aabb;--line:#2e3442}body{background:var(--bg)}.card{background:#1a1f2b;border-color:var(--line)}.r{border-bottom-color:#2a303d}.bar{background:#2a303d}.bar i{background:#8ea7ff}.r:first-child .bar i{background:var(--ball);outline-color:var(--ball)}.pbar{background:#2a303d}.pr b{color:var(--ink)}select{background:#1a1f2b;color:var(--ink);border-color:var(--line)}header{background:#0b1224}}
 </style></head><body>
 <header><div><h1>Elo <span>Rating</span> League</h1><p>12 club players, 240 matches. Ratings update after every game.</p></div></header>
 <main><div><div class="card"><h2>Leaderboard</h2><div id="lb"></div></div></div>
-<div><div class="card"><h2>Who wins?</h2><select id="a"></select><select id="b"></select><div class="pr" id="pr"></div></div>
+<div><div class="card"><h2>Who wins?</h2><select id="a"></select><select id="b"></select><div class="pr" id="pr" role="status"></div></div>
 <div class="card m" id="ev"></div></div></main>
 <script>
 const $=i=>document.getElementById(i);
-async function main(){
+async function main(){try{
 const L=(await (await fetch('/leaderboard')).json()).players,lo=Math.min(...L.map(p=>p.rating))-40,hi=Math.max(...L.map(p=>p.rating));
 const spark=h=>{const mn=Math.min(...h),mx=Math.max(...h),n=h.length;return `<svg viewBox="0 0 120 26" preserveAspectRatio="none"><polyline fill="none" stroke="#14213d" stroke-width="1.6" points="${h.map((v,i)=>(i/(n-1)*118+1)+','+(24-(v-mn)/(mx-mn||1)*22)).join(' ')}"/></svg>`};
 $('lb').innerHTML=L.map((p,i)=>`<div class="r"><span class="n">${i+1}</span><b>${p.player}</b><div class="bar"><i style="width:${(p.rating-lo)/(hi-lo)*100}%"></i></div>${spark(p.history)}<span class="v">${Math.round(p.rating)}</span></div>`).join('');
 const opts=L.map(p=>`<option>${p.player}</option>`).join('');$('a').innerHTML=opts;$('b').innerHTML=opts;$('a').value=L[0].player;$('b').value=L[L.length-1].player;
-async function pred(){const r=await fetch(`/predict?a=${$('a').value}&b=${$('b').value}`);if(!r.ok){$('pr').innerHTML='<small>pick two different players</small>';return}
+async function pred(){let r;try{r=await fetch(`/predict?a=${$('a').value}&b=${$('b').value}`)}catch(e){$('pr').innerHTML='<small>Could not predict this match. Try again.</small>';return}if(!r.ok){$('pr').innerHTML='<small>pick two different players</small>';return}
 const j=await r.json(),p=Math.round(j.p_a*100);$('pr').innerHTML=`<b>${p}%</b><small>${j.a} beats ${j.b}</small><div class="pbar"><i style="width:${p}%"></i></div>`}
 $('a').onchange=pred;$('b').onchange=pred;pred();
 const e=await (await fetch('/evaluation')).json();
-$('ev').innerHTML=`<h2>Is Elo better than win rate?</h2>Trained on the first ${e.matches-e.holdout} matches, tested on the last ${e.holdout}.<br>Ranking vs hidden true skill: Elo <b>${e.rank_corr_elo}</b>, win rate <b>${e.rank_corr_winrate}</b> (1 is perfect).<br>Predicting the winner: Elo <b>${Math.round(e.acc_elo*100)}%</b>, win rate <b>${Math.round(e.acc_winrate*100)}%</b>.`}
+$('ev').innerHTML=`<h2>Is Elo better than win rate?</h2>Trained on the first ${e.matches-e.holdout} matches, tested on the last ${e.holdout}.<br>Ranking vs hidden true skill: Elo <b>${e.rank_corr_elo}</b>, win rate <b>${e.rank_corr_winrate}</b> (1 is perfect).<br>Predicting the winner: Elo <b>${Math.round(e.acc_elo*100)}%</b>, win rate <b>${Math.round(e.acc_winrate*100)}%</b>.`}catch(e){$('lb').innerHTML='<p class="m">Could not load the league table. Refresh to try again.</p>'}}
 main();
 </script></body></html>

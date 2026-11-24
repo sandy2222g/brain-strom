@@ -83,3 +83,11 @@ def test_api():
     assert c.get("/predict", params={"a": "Ana", "b": "Ben"}).json()["p_a"] > 0.5
     assert c.get("/predict", params={"a": "Ana", "b": "Ana"}).status_code == 422
     assert c.get("/evaluation").json()["acc_elo"] == 0.733 and c.get("/").status_code == 200
+
+
+def test_index_has_error_texts_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not load the league table" in page
+    assert "Could not predict this match" in page
+    assert 'id="pr" role="status"' in page
+    assert "prefers-color-scheme: dark" in page
