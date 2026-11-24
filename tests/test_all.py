@@ -77,3 +77,9 @@ def test_api_samples_and_metrics():
 def test_api_validation():
     assert c.post("/predict", json={"pixels": [0.0] * 64}).status_code == 422
     assert c.post("/predict", json={"pixels": [0.0] * 3}).status_code == 422
+
+
+def test_index_has_error_texts():
+    page = c.get("/").text
+    assert "Could not reach the classifier" in page
+    assert "Accuracy figures unavailable right now" in page
