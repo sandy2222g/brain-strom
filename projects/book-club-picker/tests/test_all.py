@@ -82,3 +82,11 @@ def test_api():
 def test_api_errors():
     bad = {"books": ["a", "b"], "ballots": [{"voter": "x", "ranking": ["a", "a"]}]}
     assert c.post("/tally", json=bad).status_code == 422
+
+
+def test_index_has_error_text():
+    assert "Could not load the vote" in c.get("/").text
+
+
+def test_group_ranking_is_labelled():
+    assert 'aria-label="Group ranking, best first"' in c.get("/").text
