@@ -35,3 +35,11 @@ def test_plan_day_and_sample() -> None:
         assert len(sample["appointments"]) == 20
         assert c.post("/plan-day", json=sample).json()["appointments"] == 20
         assert c.post("/plan-day", json={"appointments": []}).status_code == 422
+
+
+def test_index_has_error_and_guard_markers() -> None:
+    with TestClient(app) as c:
+        page = c.get("/").text
+        assert "Could not load the day plan" in page
+        assert "Could not get a prediction" in page
+        assert "const my = ++seq" in page

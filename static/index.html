@@ -91,6 +91,7 @@ footer { margin-top:28px; font-size:.88rem; color:var(--muted); } footer a { col
         </div>
         <label class="f" for="insurance" style="margin-top:10px">Insurance<select id="insurance"><option>public</option><option>private</option><option>none</option></select></label>
         <button class="btn" type="submit">Check this booking</button>
+        <p id="planerr" role="status"></p>
       </form>
       <div class="answer" id="answer" hidden></div>
     </aside>
@@ -127,9 +128,14 @@ function renderDay(d) {
     row.append(list); box.append(row);
   });
 }
+let seq = 0;
 async function check() {
+  const my = ++seq;
   const body = {}; FIELDS.forEach((f) => { const v = $(f).value; body[f] = f === "insurance" ? v : Number(v); });
-  const r = await fetch("/predict", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) });
+  let r;
+  try { r = await fetch("/predict", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) }); }
+  catch (e) { const a0 = $("answer"); a0.hidden = false; a0.className = "answer"; a0.textContent = "Could not get a prediction. Try again."; return; }
+  if (my !== seq) return;
   const a = $("answer"); a.hidden = false; a.textContent = "";
   if (!r.ok) { a.className = "answer"; a.append("Some values are out of range. Check age, hour and the other numbers."); return; }
   const d = await r.json(); a.className = "answer " + d.band;
@@ -137,9 +143,11 @@ async function check() {
 }
 $("form").addEventListener("submit", (e) => { e.preventDefault(); check(); });
 (async () => {
+  try {
   const sample = await (await fetch("/sample-day")).json();
   const d = await (await fetch("/plan-day", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(sample) })).json();
   renderDay(d); check();
+  } catch (e) { $("planerr").textContent = "Could not load the day plan. Refresh to try again."; }
 })();
 </script>
 </body>
