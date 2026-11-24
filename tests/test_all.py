@@ -91,3 +91,7 @@ def test_api():
 
 def test_api_validation():
     assert c.post("/plan", json={"start_temp": 80}).status_code == 422
+
+
+def test_page_shows_error_message_when_plan_fails():
+    assert "Could not plan the heating" in c.get("/").text
