@@ -11,13 +11,14 @@ button{background:var(--accent);color:#fff;border:0;padding:.6rem 1.4rem;font:in
 .col{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 2px 0 #e8b4c8}
 .col h2{margin:0;font-size:1.1rem}.big{font-size:2rem;font-weight:bold;color:var(--accent)}
 ul{list-style:none;padding:0;margin:10px 0 0}li{display:flex;justify-content:space-between;border-top:1px dashed #e8b4c8;padding:6px 0;font-size:.95rem}
+@media (prefers-color-scheme: dark){:root{--bg:#2a1620;--ink:#fde8ef;--accent:#ff7eb0;--card:#3b2230;--mute:#e7b9c9}button{color:#2a1620}.col{box-shadow:0 2px 0 #1a0d14}}
 </style></head><body><main>
 <h1>Gift Budget Splitter</h1>
 <p id="sub">One budget, five people: who gets what?</p>
 <button id="go">Plan the sample budget</button><div class="cols" id="out"></div></main>
 <script>
 const out=document.getElementById("out");
-document.getElementById("go").onclick=async()=>{
+document.getElementById("go").onclick=async()=>{try{
   const s=await (await fetch("/sample")).json();
   const r=await (await fetch("/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(s)})).json();
   document.getElementById("sub").textContent=`Budget $${s.budget}.`;
@@ -28,6 +29,7 @@ document.getElementById("go").onclick=async()=>{
     for(const [n,g] of Object.entries(p.gifts))h+=`<li><span>${n}: ${g?g.name:"nothing"}</span><span>${g?"$"+g.price:""}</span></li>`;
     d.innerHTML=h+"</ul>";out.appendChild(d);
   }
+}catch(e){document.getElementById("sub").textContent="Could not plan the gifts. Try again.";out.innerHTML="";}
 };
 document.getElementById("go").click();
 </script></body></html>
