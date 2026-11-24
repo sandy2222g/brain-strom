@@ -25,7 +25,7 @@ def health() -> dict[str, str]:
 
 
 @app.get("/suggest")
-def suggest(q: str = Query(...), k: int = 5) -> dict[str, object]:
+def suggest(q: str = Query(...), k: int = Query(5, ge=1, le=20)) -> dict[str, object]:
     try:
         return trie().suggest(q, k)
     except core.SearchError as e:

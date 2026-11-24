@@ -71,3 +71,20 @@ def test_api():
     assert c.get("/suggest", params={"q": ""}).status_code == 422
     assert c.get("/evaluation").json()["fuzzy_recall"] == 1.0
     assert load().size == 158 and c.get("/").status_code == 200
+
+
+def test_suggest_k_is_bounded():
+    assert c.get("/suggest", params={"q": "lo", "k": 0}).status_code == 422
+    assert c.get("/suggest", params={"q": "lo", "k": 21}).status_code == 422
+
+
+def test_index_guards_stale_responses():
+    assert "const my=++seq" in c.get("/").text
+
+
+def test_index_has_light_scheme():
+    assert "prefers-color-scheme: light" in c.get("/").text
+
+
+def test_mode_is_announced():
+    assert 'role="status"' in c.get("/").text
