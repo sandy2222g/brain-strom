@@ -1,15 +1,24 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Race Pace Planner</title>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f1f5ee;--card:#fff;--ink:#14281d;--mute:#5a6e60;--grn:#1f8f4e;--hill:#d9e6d3;--line:#c8d6c2;--oran:#f08a24}
-@media(prefers-color-scheme:dark){:root{--bg:#0f1a14;--card:#16251c;--ink:#e9f4ec;--mute:#9db5a4;--grn:#46c47a;--hill:#24382b;--line:#2f4738;--oran:#ffa64d}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Work Sans",sans-serif}
-main{max-width:980px;margin:auto;padding:26px 16px 56px}
-h1{font:700 clamp(2.4rem,9vw,4.2rem)/1 Oswald,sans-serif;text-transform:uppercase;letter-spacing:.01em;margin:0}h1 span{color:var(--grn)}
-.sub{color:var(--mute);max-width:62ch;margin:8px 0 18px}
-.kpi{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}.kpi div{background:var(--card);border-left:6px solid var(--grn);padding:8px 16px;border-radius:4px}.kpi b{display:block;font:700 2rem/1.1 Oswald}.kpi span{font-size:.8rem;color:var(--mute)}
-.card{background:var(--card);border-radius:8px;padding:12px;margin-bottom:12px;border:1px solid var(--line)}.card h2{font:700 1rem Oswald;text-transform:uppercase;margin:0 0 6px;letter-spacing:.06em}
-svg{width:100%;height:auto;display:block}.note{color:var(--mute);font-size:.85rem}
+:root{--bg:#eef2fb;--card:#ffffff;--ink:#101c33;--mute:#5a6785;--accent:#d6336c;--blue:#3b5bdb;--hill:#d0dcf5;--line:#b9c6e6;color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a1624;--card:#112336;--ink:#e6f0fb;--mute:#93a7c2;--accent:#ff6f9c;--blue:#7aa2ff;--hill:#1d3650;--line:#244363;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0a1624;--card:#112336;--ink:#e6f0fb;--mute:#93a7c2;--accent:#ff6f9c;--blue:#7aa2ff;--hill:#1d3650;--line:#244363;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--ink);font:16px/1.5 "Bahnschrift","DIN Alternate","Arial Narrow",Arial,sans-serif}
+main{max-width:980px;margin:0 auto;padding:24px 16px 56px}
+h1{margin:0;font-size:clamp(2.1rem,8vw,3.6rem);line-height:1;font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+h1 span{color:var(--accent)}
+.sub{color:var(--mute);max-width:62ch;margin:10px 0 18px;font-size:1.05rem}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:14px}
+.kpi div{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--blue);padding:10px 14px;border-radius:10px}
+.kpi div:last-child{border-top-color:var(--accent)}
+.kpi b{display:block;font-size:2.2rem;line-height:1.1;font-weight:700}
+.kpi span{font-size:.85rem;color:var(--mute);text-transform:uppercase;letter-spacing:.05em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.card h2{font-size:.95rem;font-weight:700;text-transform:uppercase;margin:0 0 8px;letter-spacing:.08em;color:var(--blue)}
+svg{width:100%;height:auto;display:block}
+.note{color:var(--mute);font-size:.88rem}
 </style></head><body><main>
 <h1>Race Pace <span>Planner</span></h1><p class="sub">A hilly 10 km course and a fixed effort budget, the amount a runner could spend holding 11 km/h evenly. Where should the effort go?</p>
 <div class="kpi" id="k" aria-live="polite"></div>
@@ -21,9 +30,9 @@ const $=i=>document.getElementById(i);
 const fm=m=>Math.floor(m)+":"+String(Math.round((m%1)*60)).padStart(2,"0");
 $("k").innerHTML=`<div><b>${fm(r.even.minutes)}</b><span>even pace</span></div><div><b>${fm(r.optimal.minutes)}</b><span>hill-aware pace</span></div><div><b>${r.seconds_saved} s</b><span>faster at the same effort</span></div>`;
 const n=r.segments.length,W=720,m=40,bw=(W-m-10)/n,Yh=g=>130-g*7,Ys=v=>260-(v-8)*14;
-let s="";r.segments.forEach((g,i)=>{const x=m+i*bw;s+=`<rect x="${x+2}" y="${Math.min(Yh(g.grade),Yh(0))}" width="${bw-4}" height="${Math.abs(Yh(g.grade)-Yh(0))||2}" fill="var(--hill)"/><text x="${x+bw/2}" y="${g.grade>=0?Yh(g.grade)-4:Yh(g.grade)+12}" text-anchor="middle" font-size="10" fill="var(--mute)">${g.grade>0?"+":""}${g.grade}%</text>`});
-s+=`<line x1="${m}" y1="${Ys(r.even.speeds_kmh[0])}" x2="${W-10}" y2="${Ys(r.even.speeds_kmh[0])}" stroke="var(--mute)" stroke-width="2" stroke-dasharray="6 4"/><text x="${W-12}" y="${Ys(r.even.speeds_kmh[0])+34}" text-anchor="end" font-size="11" fill="var(--mute)">even ${r.even.speeds_kmh[0]} km/h</text>`;
-s+=`<polyline fill="none" stroke="var(--grn)" stroke-width="3.5" points="${r.optimal.speeds_kmh.map((v,i)=>(m+i*bw+bw/2)+","+Ys(v)).join(" ")}"/>`+r.optimal.speeds_kmh.map((v,i)=>`<circle cx="${m+i*bw+bw/2}" cy="${Ys(v)}" r="4.5" fill="var(--grn)"/><text x="${m+i*bw+bw/2}" y="${Ys(v)+(v>r.even.speeds_kmh[0]?-9:17)}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)">${v.toFixed(1)}</text>`).join("");
-s+=r.segments.map((g,i)=>`<text x="${m+i*bw+bw/2}" y="276" text-anchor="middle" font-size="10" fill="var(--mute)">km ${i+1}</text>`).join("");
+let s="";r.segments.forEach((g,i)=>{const x=m+i*bw;s+=`<rect x="${x+2}" y="${Math.min(Yh(g.grade),Yh(0))}" width="${bw-4}" height="${Math.abs(Yh(g.grade)-Yh(0))||2}" style="fill:var(--hill)"/><text x="${x+bw/2}" y="${g.grade>=0?Yh(g.grade)-4:Yh(0)+14}" text-anchor="middle" font-size="10" style="fill:var(--mute)">${g.grade>0?"+":""}${g.grade}%</text>`});
+s+=`<line x1="${m}" y1="${Ys(r.even.speeds_kmh[0])}" x2="${W-10}" y2="${Ys(r.even.speeds_kmh[0])}" style="stroke:var(--mute)" stroke-width="2" stroke-dasharray="6 4"/><text x="${W-12}" y="${Ys(r.even.speeds_kmh[0])+34}" text-anchor="end" font-size="11" style="fill:var(--mute)">even ${r.even.speeds_kmh[0]} km/h</text>`;
+s+=`<polyline fill="none" style="stroke:var(--accent)" stroke-width="3.5" points="${r.optimal.speeds_kmh.map((v,i)=>(m+i*bw+bw/2)+","+Ys(v)).join(" ")}"/>`+r.optimal.speeds_kmh.map((v,i)=>`<circle cx="${m+i*bw+bw/2}" cy="${Ys(v)}" r="4.5" style="fill:var(--accent)"/><text x="${m+i*bw+bw/2}" y="${Ys(v)+(v>r.even.speeds_kmh[0]?-9:17)}" text-anchor="middle" font-size="11" font-weight="600" style="fill:var(--ink)">${v.toFixed(1)}</text>`).join("");
+s+=r.segments.map((g,i)=>`<text x="${m+i*bw+bw/2}" y="276" text-anchor="middle" font-size="10" style="fill:var(--mute)">km ${i+1}</text>`).join("");
 $("c").innerHTML=s})();
 </script></body></html>
