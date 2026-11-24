@@ -1,25 +1,38 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cook For N</title>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#fff7ec;--ink:#201a14;--mute:#6b5f52;--pop:#e4572e;--pop2:#2e86ab;--card:#ffffff;--line:#e8dac6}
-@media(prefers-color-scheme:dark){:root{--bg:#171310;--ink:#f6ecde;--mute:#b3a592;--pop:#ff7a52;--pop2:#62b7da;--card:#221c17;--line:#3b3128}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,sans-serif}
-main{max-width:960px;margin:auto;padding:24px 16px 56px}h1{font:800 clamp(2rem,6vw,3.4rem)/1 "Bricolage Grotesque";margin:0}h1 span{color:var(--pop)}
-.sub{color:var(--mute);margin:6px 0 20px}.pick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
-.pick label{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:2px solid var(--ink);background:var(--card);cursor:pointer;border-radius:999px;transition:transform 150ms}
-.pick label:hover{transform:translateY(-2px)}input[type=checkbox]{accent-color:var(--pop);width:18px;height:18px}
-.n{display:flex;align-items:center;gap:12px;margin-bottom:20px}input[type=range]{flex:1;max-width:340px;accent-color:var(--pop)}.num{font:800 2rem "Bricolage Grotesque";min-width:2.5ch}
+:root{--bg:#fdf1f6;--ink:#2b1a26;--mute:#7a5d70;--pop:#b5179e;--pop2:#0b7285;--card:#ffffff;--line:#efd3e3;--chip:#fbe3f0;color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1119;--ink:#f7e9f2;--mute:#c0a3b5;--pop:#f06ad0;--pop2:#5fd0e4;--card:#2a1a25;--line:#43283a;--chip:#3a2232;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1c1119;--ink:#f7e9f2;--mute:#c0a3b5;--pop:#f06ad0;--pop2:#5fd0e4;--card:#2a1a25;--line:#43283a;--chip:#3a2232;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--ink);font:16px/1.5 "Gill Sans","Gill Sans MT",Calibri,sans-serif}
+main{max-width:940px;margin:auto;padding:26px 16px 56px}
+h1{margin:0;font-size:clamp(2rem,6vw,3rem);line-height:1;font-weight:700;letter-spacing:-.01em}
+h1 span{color:var(--pop)}
+.sub{color:var(--mute);margin:8px 0 18px}
+.pick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.pick label{display:flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border-radius:999px;background:var(--chip);cursor:pointer;transition:background 150ms}
+.pick label:has(input:checked){background:var(--pop);color:#fff}
+.pick label:has(input:focus-visible){outline:3px solid var(--pop2);outline-offset:2px}
+input[type=checkbox]{accent-color:var(--pop);width:18px;height:18px}
+.n{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+input[type=range]{flex:1;max-width:360px;accent-color:var(--pop)}
+.num{font-size:2.2rem;font-weight:700;min-width:2.5ch;color:var(--pop)}
 :focus-visible{outline:3px solid var(--pop2);outline-offset:2px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:16px}
-.card{background:var(--card);border:2px solid var(--ink);padding:16px;box-shadow:6px 6px 0 var(--pop);animation:in .3s}@keyframes in{from{opacity:0;transform:translateY(6px)}}
-.card h2{font:800 1.2rem "Bricolage Grotesque";margin:0 0 8px}.l{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:.9rem}
-.big{font:800 2.6rem "Bricolage Grotesque";color:var(--pop2)}.mute{color:var(--mute);font-size:.85rem}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.layout{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start}
+@media(max-width:760px){.layout{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.card h2{font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin:0 0 10px;color:var(--pop2)}
+.l{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px dotted var(--line);font-size:.97rem}
+.l:last-child{border-bottom:0}
+.big{font-size:2.8rem;font-weight:700;color:var(--ink);line-height:1.1}
+.mute{color:var(--mute);font-size:.9rem}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head><body><main>
 <h1>Cook for <span id="hn">4</span></h1><p class="sub">Pick dishes and a headcount. Get a shopping list rounded to real pack sizes.</p>
 <div class="pick" id="pick" role="group" aria-label="Dishes"></div>
 <div class="n"><input type="range" id="ppl" min="1" max="24" value="4" aria-label="People"><span class="num" id="pn">4</span></div>
-<div class="grid"><section class="card" aria-live="polite"><h2>Shopping list</h2><div id="list"></div></section>
+<div class="layout"><section class="card" aria-live="polite"><h2>Shopping list</h2><div id="list"></div></section>
 <section class="card" aria-live="polite"><h2>Cost</h2><div class="big" id="tot"></div><p class="mute" id="note"></p></section></div></main>
 <script>
 const $=i=>document.getElementById(i),m=n=>"$"+n.toFixed(2);let names=[];
