@@ -84,3 +84,12 @@ def test_api():
 
 def test_api_errors():
     assert c.post("/assign", json={"slots": ["a"], "residents": {"x": ["a"], "y": ["a"]}}).status_code == 422
+
+
+def test_index_has_error_text():
+    assert "Could not assign the slots" in c.get("/").text
+
+
+def test_tag_and_pill_colours_meet_contrast():
+    page = c.get("/").text
+    assert "background:#b3261e" in page and "color:#c2412d" in page
