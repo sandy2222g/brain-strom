@@ -89,3 +89,23 @@ def test_validation_and_api():
     assert c.get("/validate", params={"scheme": "luhn", "value": "1" * 80}).status_code == 422
     assert c.get("/experiment", params={"trials": 1000}).json()["rates"]["isbn10"]["transposition"] == 1.0
     assert set(c.get("/examples").json()["examples"]) == set(SCHEMES) and c.get("/").status_code == 200
+
+
+def test_index_has_check_error_text():
+    assert "Could not check the number" in c.get("/").text
+
+
+def test_index_ignores_stale_validation_responses():
+    assert "const my=++seq" in c.get("/").text
+
+
+def test_index_has_experiment_error_text():
+    assert "mistake experiment is unavailable" in c.get("/").text
+
+
+def test_index_announces_results_to_screen_readers():
+    assert 'role="status"' in c.get("/").text
+
+
+def test_index_has_dark_colour_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text
