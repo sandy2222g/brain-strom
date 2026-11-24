@@ -4,8 +4,8 @@
 :root{--sky1:#1c1b4a;--sky2:#7a3b7a;--sky3:#ffb08a;--ink:#fff7ef;--mute:#ddc9d6;--card:rgba(24,12,48,.62);--line:rgba(255,255,255,.22);--sun:#ffd27a}
 *{box-sizing:border-box}body{margin:0;color:var(--ink);font:16px/1.55 Mulish,sans-serif;background:linear-gradient(180deg,var(--sky1),var(--sky2) 60%,var(--sky3));min-height:100vh;background-attachment:fixed}
 main{max-width:960px;margin:auto;padding:24px 16px 56px}h1{font:800 clamp(2.2rem,8vw,4rem)/1 Syne;margin:0}h1 span{color:var(--sun)}.sub{color:var(--mute);margin:6px 0 18px}
-.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:12px;margin-bottom:18px}label{display:grid;gap:4px;font-size:.8rem;color:var(--mute)}
-select,input{min-height:44px;border-radius:10px;border:1px solid var(--line);background:rgba(20,10,40,.55);color:var(--ink);padding:0 10px;font:inherit}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:12px;margin-bottom:18px}label{display:grid;gap:4px;font-size:.8rem;color:var(--mute);min-width:0}
+select,input{width:100%;min-width:0;min-height:44px;border-radius:10px;border:1px solid var(--line);background:rgba(20,10,40,.55);color:var(--ink);padding:0 10px;font:inherit}
 button{min-height:44px;border:0;border-radius:999px;background:var(--sun);color:#2a1740;font:800 1rem Syne;padding:0 24px;cursor:pointer;transition:transform 150ms;align-self:end}button:hover{transform:translateY(-2px)}button:active{transform:none}:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 .sum{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px}.s{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 18px}.s b{display:block;font:800 1.9rem Syne;color:var(--sun)}.s span{font-size:.8rem;color:var(--mute)}
 .tl{display:grid;gap:8px}.d{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;display:grid;grid-template-columns:minmax(120px,1fr) minmax(0,2fr) minmax(0,2fr);gap:10px;animation:in .3s both}.d.f{border-color:var(--sun)}
