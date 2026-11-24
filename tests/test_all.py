@@ -59,3 +59,17 @@ def test_api():
     assert c.get("/").status_code == 200
     empty = {"tariff": {"peak": 1, "off_peak": 1, "flat": 1}, "appliances": []}
     assert c.post("/report", json=empty).status_code == 422
+
+
+def test_all_unshiftable_means_no_saving():
+    body = {**H, "appliances": [{**a, "shiftable": False} for a in H["appliances"]]}
+    r = c.post("/report", json=body).json()
+    assert r["total_saving"] == pytest.approx(0)
+
+
+def test_index_has_error_text():
+    assert "Could not load the report" in c.get("/").text
+
+
+def test_index_has_light_scheme():
+    assert "prefers-color-scheme: light" in c.get("/").text

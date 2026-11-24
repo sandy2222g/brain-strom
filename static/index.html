@@ -3,23 +3,50 @@
 <title>Appliance Power Cost</title>
 <style>
 :root{--bg:#1b1d1f;--ink:#f1f3ee;--lime:#c6f432;--mute:#8d958a;--bar:#2e3235;--sav:#4cc9f0}
+@media (prefers-color-scheme: light){:root{--bg:#f4f6f2;--ink:#1b1d1f;--lime:#3d6b00;--mute:#5c6459;--bar:#dde2d8;--sav:#0a7ea4}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 "Helvetica Neue",Arial,sans-serif}
 main{max-width:820px;margin:0 auto;padding:30px 16px}h1{margin:0;font-size:2rem;color:var(--lime);letter-spacing:-1px}p{color:var(--mute)}
 .row{display:grid;grid-template-columns:130px 1fr 96px;gap:12px;align-items:center;margin:9px 0}
+@media (max-width:520px){.row{grid-template-columns:minmax(0,96px) minmax(0,1fr) 64px;gap:8px}}
 .bar{height:22px;background:var(--bar);border-radius:3px;position:relative}.b{height:100%;background:var(--lime);border-radius:3px;position:relative}
 .s{position:absolute;right:0;top:0;height:100%;background:var(--sav);border-radius:0 3px 3px 0}
 .v{text-align:right;font-variant-numeric:tabular-nums}.key{color:var(--mute);font-size:.85rem;margin:6px 0 14px}
 .tot{margin-top:22px;border-top:1px solid var(--bar);padding-top:14px;font-size:1.1rem}.tot b{color:var(--lime)}
+.tog{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--mute);margin-top:2px}
 </style></head><body><main>
 <h1>Where the power bill goes</h1><p>Monthly cost per appliance with peak and off-peak rates.</p>
 <div class="key"><span style="color:var(--lime)">&#9632;</span> cost now &nbsp; <span style="color:var(--sav)">&#9632;</span> saved by running off-peak</div>
 <div id="out"></div><div class="tot" id="tot"></div></main>
 <script>
-(async()=>{
-  const s=await (await fetch("/sample")).json();
-  const r=await (await fetch("/report",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(s)})).json();
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let S=null;
+function render(r){
   const mx=Math.max(...r.rows.map(x=>x.cost));
-  document.getElementById("out").innerHTML=r.rows.map(x=>`<div class="row"><div>${x.name}</div><div class="bar"><div class="b" style="width:${x.cost/mx*100}%"><div class="s" style="width:${x.cost?x.saving/x.cost*100:0}%"></div></div></div><div class="v">${x.cost.toFixed(2)}</div></div>`).join("");
-  document.getElementById("tot").innerHTML=`Total <b>${r.total.toFixed(2)}</b> a month (a single flat rate would say ${r.total_flat.toFixed(2)}). Running the dishwasher, washer and EV charger off-peak saves <b>${r.total_saving.toFixed(2)}</b>.`;
-})();
+  $("out").innerHTML=r.rows.map(x=>{
+    const a=S.appliances.find(q=>q.name===x.name)||{};
+    const tog="shiftable" in a?`<label class="tog"><input type="checkbox" data-name="${esc(x.name)}" ${a.shiftable?"checked":""}> shiftable</label>`:"";
+    return `<div class="row"><div>${esc(x.name)}${tog}</div><div class="bar" role="img" aria-label="${esc(x.name)}: cost ${x.cost.toFixed(2)}, saving ${x.saving.toFixed(2)}"><div class="b" style="width:${x.cost/mx*100}%"><div class="s" style="width:${x.cost?x.saving/x.cost*100:0}%"></div></div></div><div class="v">${x.cost.toFixed(2)}</div></div>`;
+  }).join("");
+  $("tot").innerHTML=`Total <b>${r.total.toFixed(2)}</b> a month (a single flat rate would say ${r.total_flat.toFixed(2)}). Running the shiftable loads off-peak saves <b>${r.total_saving.toFixed(2)}</b>.`;
+}
+async function report(){
+  const r=await (await fetch("/report",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(S)})).json();
+  render(r);
+}
+async function load(){
+  try{
+    S=await (await fetch("/sample")).json();
+    await report();
+  }catch(e){
+    $("tot").textContent="Could not load the report. Refresh to try again.";
+  }
+}
+$("out").addEventListener("change",e=>{
+  const n=e.target.dataset.name;
+  if(!n||!S)return;
+  S.appliances.find(q=>q.name===n).shiftable=e.target.checked;
+  report().catch(()=>{$("tot").textContent="Could not update the report. Refresh to try again.";});
+});
+load();
 </script></body></html>
