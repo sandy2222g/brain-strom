@@ -100,3 +100,9 @@ def test_api():
     assert r["wake"] == "07:31" and r["total"] == 44
     assert c.get("/").status_code == 200
     assert c.post("/plan", json={"leave": "x", "tasks": T}).status_code == 422
+
+
+def test_index_has_wakeup_error_text_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not work out your wake-up time" in page
+    assert "prefers-color-scheme: dark" in page

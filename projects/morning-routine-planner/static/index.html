@@ -11,18 +11,19 @@ main{max-width:860px;margin:0 auto;padding:30px 16px}h1{margin:0;font-size:2.3re
 .track{position:relative;height:20px;background:#0000000d;border-radius:4px}.seg{position:absolute;height:100%;background:var(--bar);border-radius:4px}.seg.f{background:var(--free)}
 .axis{display:flex;justify-content:space-between;font-size:.75rem;color:var(--mute);margin-left:130px;margin-top:4px}
 .note{margin-top:14px;font-size:.9rem}
+@media (prefers-color-scheme: dark){body{background:#15161c;color:#eceef5}.card{background:#2a2622e8}.track{background:#ffffff1a}}
 </style></head><body><main>
 <h1>When must I get up?</h1><p id="sub"></p>
 <div class="big" id="big"></div>
 <div class="card"><div id="gantt"></div><div class="axis" id="axis"></div><div class="note" id="note"></div></div></main>
 <script>
-(async()=>{
+(async()=>{try{
   const s=await (await fetch("/sample")).json();
   const r=await (await fetch("/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({leave:s.leave,tasks:s.tasks})})).json();
   document.getElementById("sub").textContent=`Out of the door at ${s.leave}. Orange: you are busy. Amber: it happens on its own.`;
   document.getElementById("big").innerHTML=`<div><b>${r.wake}</b><span>wake up</span></div><div><b>${r.total} min</b><span>start to door</span></div><div><b>${r.wake_one_at_a_time}</b><span>if everything is done one by one</span></div>`;
   document.getElementById("gantt").innerHTML=r.rows.map(x=>`<div class="row"><div>${x.name}</div><div class="track"><div class="seg ${x.hands_free?"f":""}" style="left:${x.start/r.total*100}%;width:${(x.end-x.start)/r.total*100}%"></div></div></div>`).join("");
   document.getElementById("axis").innerHTML=`<span>${r.wake}</span><span>${s.leave}</span>`;
-  document.getElementById("note").textContent=`Even with unlimited helpers the routine could not be shorter than ${r.lower_bound} min (kettle, coffee, breakfast, teeth, coat).`;
+  document.getElementById("note").textContent=`Even with unlimited helpers the routine could not be shorter than ${r.lower_bound} min (kettle, coffee, breakfast, teeth, coat).`;}catch(e){document.getElementById("sub").textContent="Could not work out your wake-up time. Refresh to try again."}
 })();
 </script></body></html>
