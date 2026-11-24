@@ -61,3 +61,11 @@ def test_validation_and_api():
     assert j["exact"] and evaluate(j["expression"]) == 353
     assert c.get("/solve", params={"numbers": "a,b", "target": 5}).status_code == 422
     assert c.get("/puzzle").json()["target"] > 100 and c.get("/").status_code == 200
+
+
+def test_index_has_error_text_live_region_and_light_scheme():
+    page = c.get("/").text
+    assert "Could not load the puzzle" in page
+    assert "Could not solve this puzzle" in page
+    assert 'id="e" role="status"' in page
+    assert "prefers-color-scheme: light" in page
