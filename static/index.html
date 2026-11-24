@@ -13,22 +13,23 @@ h1{font:700 44px/1 "Helvetica Neue",Arial,sans-serif;letter-spacing:-2px;margin:
 h2{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);margin:0 0 8px}
 .runs{list-style:none;padding:0;margin:0;border-top:2px solid var(--line)}.runs li{display:flex;justify-content:space-between;padding:9px 2px;border-bottom:1px solid #ccc;font-variant-numeric:tabular-nums}.runs li b{font-family:"Courier New",monospace}.runs li span{color:var(--grey)}
 .m{margin-top:20px;font-size:13px;color:var(--grey)}
+@media (prefers-color-scheme: dark){:root{--ink:#f2f2ee;--red:#e30613;--grey:#a8a8a8;--line:#f2f2ee}body{background:#161616}.fields input{color:var(--ink)}.fields label{background:#222}.fields input:focus{background:#3a1516}.chips button{background:#161616;color:var(--ink)}.say.bad{color:#ff5c66}.runs li{border-bottom-color:#444}}
 </style></head><body><main>
 <div class="top"><h1>Cron, in words.</h1><span>explainer</span></div>
 <div class="fields"><div><input id="f0" value="30"><label>minute</label></div><div><input id="f1" value="9"><label>hour</label></div><div><input id="f2" value="*"><label>day of month</label></div><div><input id="f3" value="*"><label>month</label></div><div><input id="f4" value="1-5"><label>weekday</label></div></div>
-<div class="chips" id="ch"></div><div class="say" id="say"></div>
+<div class="chips" id="ch"></div><div class="say" id="say" role="status"></div>
 <h2 id="rh">Next runs</h2><ul class="runs" id="runs"></ul>
 <p class="m" id="m"></p></main>
 <script>
 const $=i=>document.getElementById(i);let tm,start='';
-async function go(){const expr=[0,1,2,3,4].map(i=>$('f'+i).value.trim()||'*').join(' ');
+async function go(){try{const expr=[0,1,2,3,4].map(i=>$('f'+i).value.trim()||'*').join(' ');
 const r=await fetch('/explain?n=6&start='+encodeURIComponent(start)+'&expr='+encodeURIComponent(expr));const j=await r.json();
 if(!r.ok){$('say').className='say bad';$('say').textContent=j.detail;$('runs').innerHTML='';return}
 $('say').className='say';$('say').textContent=j.meaning+'.';
-$('runs').innerHTML=j.runs.length?j.runs.map(t=>{const [d,h,w]=t.split(' ');return `<li><b>${d} ${h}</b><span>${w}</span></li>`}).join(''):'<li><span>Never runs: that date does not exist.</span></li>'}
+$('runs').innerHTML=j.runs.length?j.runs.map(t=>{const [d,h,w]=t.split(' ');return `<li><b>${d} ${h}</b><span>${w}</span></li>`}).join(''):'<li><span>Never runs: that date does not exist.</span></li>'}catch(e){$('say').className='say bad';$('say').textContent='Could not explain this schedule. Try again.'}}
 function setExpr(e){const p=e.startsWith('@')?{'@daily':'0 0 * * *','@hourly':'0 * * * *','@weekly':'0 0 * * 0','@monthly':'0 0 1 * *'}[e]:e;p.split(' ').forEach((v,i)=>$('f'+i).value=v);go()}
 fetch('/examples').then(r=>r.json()).then(d=>{start=d.start;$('rh').textContent='Next runs after '+start.replace('T',' ').slice(0,16);
-$('ch').innerHTML=d.examples.map(e=>`<button data-e="${e.expr}">${e.label}</button>`).join('');$('ch').onclick=ev=>{const b=ev.target.closest('button');if(b)setExpr(b.dataset.e)};go()});
+$('ch').innerHTML=d.examples.map(e=>`<button data-e="${e.expr}">${e.label}</button>`).join('');$('ch').onclick=ev=>{const b=ev.target.closest('button');if(b)setExpr(b.dataset.e)};go()}).catch(()=>{$('rh').textContent='Examples are unavailable right now.'});
 [0,1,2,3,4].forEach(i=>$('f'+i).oninput=()=>{clearTimeout(tm);tm=setTimeout(go,150)});
 $('m').textContent='Fields: minute 0-59, hour 0-23, day 1-31, month 1-12 or JAN-DEC, weekday 0-7 or SUN-SAT. Use * for any, 1,15 for a list, 1-5 for a range, */10 for every 10th. If both day and weekday are set, either one triggers a run.';
 </script></body></html>
