@@ -95,3 +95,7 @@ def test_index_has_error_text():
 
 def test_index_has_dark_scheme():
     assert "prefers-color-scheme: dark" in c.get("/").text
+
+
+def test_intro_does_not_say_black_line():
+    assert "black line" not in c.get("/").text
