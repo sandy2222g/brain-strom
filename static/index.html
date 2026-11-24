@@ -2,24 +2,47 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Potluck Dish Matcher</title>
 <style>
-:root{--red:#c62828;--ink:#3a1212;--paper:#fffafa;--mute:#8a5a5a}
-*{box-sizing:border-box}body{margin:0;color:var(--ink);font:17px/1.4 "Baskerville","Palatino Linotype",serif;
-background-color:#fff;background-image:linear-gradient(90deg,#c6282826 50%,transparent 50%),linear-gradient(#c6282826 50%,transparent 50%);background-size:48px 48px}
-main{max-width:900px;margin:0 auto;padding:28px 16px}.top{background:var(--paper);padding:14px 20px;border:3px double var(--red);margin-bottom:20px}
-h1{margin:0;font-size:2rem;color:var(--red);font-style:italic}p{margin:4px 0 0;color:var(--mute)}
-.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.col{background:var(--paper);border-top:8px solid var(--red);padding:10px 14px;box-shadow:3px 3px 0 #c6282855}.col h3{margin:0 0 6px;font-size:.9rem;text-transform:uppercase;letter-spacing:2px;color:var(--red)}
-.col div{padding:3px 0;border-bottom:1px dotted #d9b3b3}.col .gap{color:var(--red);font-style:italic}
-.cmp{margin-top:20px;background:var(--paper);border-left:8px solid var(--red);padding:10px 16px}
+:root{--bg:#eef4f1;--surface:#ffffff;--ink:#14302b;--accent:#2a9d8f;--accent-ink:#0f5a51;--warn:#e9a23b;--warn-bg:#fdf1dc;--mute:#5b7a73;--line:#cfe0da;color-scheme:light}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1d1b;--surface:#172b28;--ink:#e3f2ee;--accent:#4fc3b4;--accent-ink:#8fe3d7;--warn:#f2b65a;--warn-bg:#3a2b12;--mute:#9dbdb5;--line:#27433e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1d1b;--surface:#172b28;--ink:#e3f2ee;--accent:#4fc3b4;--accent-ink:#8fe3d7;--warn:#f2b65a;--warn-bg:#3a2b12;--mute:#9dbdb5;--line:#27433e;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--ink);font:16px/1.45 "Trebuchet MS","Segoe UI",system-ui,sans-serif}
+main{max-width:920px;margin:0 auto;padding:24px 16px 40px}
+.hero{padding:6px 2px 18px}
+.eyebrow{margin:0 0 4px;font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink)}
+h1{margin:0;font-size:clamp(1.8rem,6vw,2.4rem);line-height:1.1;font-weight:800}
+#sub{margin:8px 0 0;color:var(--mute)}
+.cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.col{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 14px 10px}
+.col h3{margin:0 0 10px;font-size:.82rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+.col div{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}
+.col div::before{content:"";flex:0 0 auto;width:9px;height:9px;border-radius:50%;background:var(--accent)}
+.col div.gap{color:var(--mute);font-style:italic}
+.col div.gap::before{background:transparent;border:2px dashed var(--warn)}
+.cmp{margin-top:20px;background:var(--warn-bg);color:var(--ink);border-radius:14px;padding:14px 18px;border-left:6px solid var(--warn)}
 </style></head><body><main>
-<div class="top"><h1>Who brings what?</h1><p id="sub"></p></div>
-<div class="cols" id="cols"></div><div class="cmp" id="cmp"></div></main>
+<header class="hero"><p class="eyebrow">Potluck planner</p><h1>Who brings what?</h1><p id="sub"></p></header>
+<section class="cols" id="cols" aria-live="polite"></section>
+<section class="cmp" id="cmp"></section>
+</main>
 <script>
 (async()=>{
   const s=await (await fetch("/sample")).json();
   const r=await (await fetch("/match",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({needs:s.needs,guests:s.guests})})).json();
   document.getElementById("sub").textContent=`${s.guests.length} guests, ${r.best.slots} dishes needed.`;
-  document.getElementById("cols").innerHTML=Object.entries(r.best.assignment).map(([c,n])=>`<div class="col"><h3>${c}</h3>${n.map(x=>`<div class="${x?"":"gap"}">${x||"nobody yet"}</div>`).join("")}</div>`).join("");
+  const cols=document.getElementById("cols");
+  for(const [c,n] of Object.entries(r.best.assignment)){
+    const col=document.createElement("div");col.className="col";
+    const h=document.createElement("h3");h.textContent=c;col.appendChild(h);
+    for(const x of n){
+      const row=document.createElement("div");
+      if(!x)row.className="gap";
+      row.textContent=x||"nobody yet";
+      col.appendChild(row);
+    }
+    cols.appendChild(col);
+  }
   const f=r.first_come;
   document.getElementById("cmp").textContent=`Matching fills ${r.best.filled} of ${r.best.slots}. Letting each guest take the first dish they can, in order, fills only ${f.filled}: ${f.missing.join(", ")||"none"} left empty while ${f.unassigned_guests.join(", ")||"nobody"} brings nothing.`;
 })();
