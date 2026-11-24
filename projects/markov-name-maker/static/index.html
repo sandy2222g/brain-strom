@@ -16,20 +16,21 @@ h2{font:900 20px Arial,sans-serif;text-transform:uppercase;margin:0 0 10px}
 .bars{background:var(--w);border:3px solid var(--k);box-shadow:5px 5px 0 var(--k);padding:16px}.row{display:grid;grid-template-columns:90px 1fr 70px;gap:10px;align-items:center;margin:6px 0;font:700 15px "Courier New",monospace}
 .bar{height:22px;background:#eee;border:2px solid var(--k)}.bar i{display:block;height:100%;background:var(--b)}.row.best .bar i{background:var(--p)}
 .note{font-weight:600;font-size:14px;margin-top:10px}
+@media (prefers-color-scheme: dark){:root{--y:#1f1b00;--k:#f5f5f5;--b:#7aa2ff;--p:#5a2a4a;--w:#1a1a1a}input,select{color:var(--k)}.bar{background:#333}.n:nth-child(3n+2){background:#262626}.n:nth-child(3n){background:#1d4a36}}
 </style></head><body><main>
 <h1>Invent a village.</h1><p class="sub">A tiny language model learned how English place names are spelled, then made up new ones.</p>
-<div class="ctl"><div><label>Starts with</label><input id="pre" maxlength="6" placeholder="any"></div>
-<div><label>Context (letters)</label><select id="ord"></select></div><div><label>How many</label><input id="n" type="number" value="12" min="1" max="50"></div><button id="go">Make names</button></div>
+<div class="ctl"><div><label for="pre">Starts with</label><input id="pre" maxlength="6" placeholder="any"></div>
+<div><label for="ord">Context (letters)</label><select id="ord"></select></div><div><label for="n">How many</label><input id="n" type="number" value="12" min="1" max="50"></div><button id="go">Make names</button></div>
 <div class="names" id="names"></div>
 <h2>Which context length works best?</h2><div class="bars" id="bars"></div><p class="note" id="note"></p>
 </main><script>
 const $=i=>document.getElementById(i);let seed=3,best=2;
-async function go(){const q=new URLSearchParams({n:$('n').value,order:$('ord').value,seed:seed++,prefix:$('pre').value});
+async function go(){try{const q=new URLSearchParams({n:$('n').value,order:$('ord').value,seed:seed++,prefix:$('pre').value});
 const r=await fetch('/generate?'+q);const j=await r.json();if(!r.ok){$('names').innerHTML='<div class="n">'+j.detail+'</div>';return}
-$('names').innerHTML=j.names.map(n=>`<div class="n">${n}</div>`).join('')}
+$('names').innerHTML=j.names.map(n=>`<div class="n">${n}</div>`).join('')}catch(e){$('names').innerHTML='<div class="n">Could not make names. Try again.</div>'}}
 fetch('/scores').then(r=>r.json()).then(d=>{best=d.best;const mx=Math.max(...d.scores.map(s=>s.bits));
 $('ord').innerHTML=d.scores.map(s=>`<option value="${s.order}"${s.order==d.best?' selected':''}>${s.order}${s.order==d.best?' (best)':''}</option>`).join('');
 $('bars').innerHTML=d.scores.map(s=>`<div class="row${s.order==d.best?' best':''}"><span>${s.order} letters</span><div class="bar"><i style="width:${s.bits/mx*100}%"></i></div><span>${s.bits}</span></div>`).join('');
-$('note').textContent='Bits of surprise per letter on '+Math.ceil(d.names/5)+' village names the model never saw. Lower is better. Too much context memorises the training names instead of learning their spelling.';go()});
+$('note').textContent='Bits of surprise per letter on '+Math.ceil(d.names/5)+' village names the model never saw. Lower is better. Too much context memorises the training names instead of learning their spelling.';go()}).catch(()=>{$('note').textContent='Could not load the scores. Refresh to try again.'});
 $('go').onclick=go;
 </script></body></html>

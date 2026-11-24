@@ -64,3 +64,10 @@ def test_api():
     assert len(r["names"]) == 5 and r["order"] == 2
     assert c.get("/generate", params={"order": 9}).status_code == 422
     assert c.get("/generate", params={"n": 99}).status_code == 422 and c.get("/").status_code == 200
+
+
+def test_index_has_scores_error_text_labels_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not load the scores" in page
+    assert 'for="pre"' in page and 'for="ord"' in page and 'for="n"' in page
+    assert "prefers-color-scheme: dark" in page
