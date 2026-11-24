@@ -81,3 +81,19 @@ def test_api():
     assert c.get("/dither", params={"method": "x"}).status_code == 422
     assert c.get("/dither", params={"image": "x"}).status_code == 404
     assert len(c.get("/images").json()["methods"]) == 4 and c.get("/").status_code == 200
+
+
+def test_index_has_dither_error_text():
+    assert "Could not dither this image" in c.get("/").text
+
+
+def test_index_has_images_error_text():
+    assert "Image list is unavailable right now" in c.get("/").text
+
+
+def test_index_announces_caption():
+    assert 'id="cap" role="status"' in c.get("/").text
+
+
+def test_index_has_dark_colour_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text
