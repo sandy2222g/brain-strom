@@ -23,11 +23,11 @@ h2{font:600 1.15rem Fraunces,serif;margin:0 0 10px}.row{margin-bottom:12px}.row 
 const $=i=>document.getElementById(i);let R,P=[],cur="fair";
 const col=n=>`var(--p${P.indexOf(n)%4})`;
 function show(){const x=R[cur];$("bf").setAttribute("aria-pressed",cur=="fair");$("br").setAttribute("aria-pressed",cur!="fair");
-$("t").innerHTML=`<tr><th>Week</th>${R.chores.map(c=>`<th>${c}</th>`).join("")}</tr>`+x.weeks.map((w,i)=>`<tr><td class="w">${i+1}</td>${w.map(n=>`<td class="c" style="background:${col(n)}">${n}</td>`).join("")}</tr>`).join("");
+$("t").innerHTML=`<caption style="caption-side:top;text-align:left;font:600 .75rem 'DM Sans',sans-serif;color:var(--mute);padding-bottom:6px">Chore rota for eight weeks</caption><tr><th>Week</th>${R.chores.map(c=>`<th>${c}</th>`).join("")}</tr>`+x.weeks.map((w,i)=>`<tr><td class="w">${i+1}</td>${w.map(n=>`<td class="c" style="background:${col(n)}">${n}</td>`).join("")}</tr>`).join("");
 const mx=Math.max(...Object.values(x.effort_by_person));
 $("side").innerHTML=`<div class="big">${x.dislike}</div><div class="k">total dislike (${R.round_robin.dislike} for round-robin, ${R.fair.dislike} for fair)</div>
 <h2>Effort per person</h2>${Object.entries(x.effort_by_person).map(([n,e])=>`<div class="row"><div><span>${n}</span><span>${e} pts</span></div><div class="bar"><i style="width:${e/mx*100}%;background:${col(n)}"></i></div></div>`).join("")}
 <div class="k">Spread between busiest and lightest: ${x.effort_spread} pts. Longest run on one chore: ${x.worst_streak} week(s).</div>`}
 $("bf").onclick=()=>{cur="fair";show()};$("br").onclick=()=>{cur="round_robin";show()};
-(async()=>{const d=await (await fetch("/sample")).json();P=d.people.map(p=>p.name);R=await (await fetch("/rota",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({people:d.people,chores:d.chores,weeks:8})})).json();show()})();
+(async()=>{try{const d=await (await fetch("/sample")).json();P=d.people.map(p=>p.name);R=await (await fetch("/rota",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({people:d.people,chores:d.chores,weeks:8})})).json();show()}catch(e){$("side").textContent="Could not build the rota. Refresh to try again.";}})();
 </script></body></html>
