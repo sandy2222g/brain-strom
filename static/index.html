@@ -167,18 +167,22 @@ function render(d) {
   });
 }
 async function plan() {
+  try {
   const body = readForm();
   const r = await fetch("/plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const d = await r.json();
   if (!r.ok) { $("kpis").textContent = ""; $("passes").textContent = ""; $("strip").textContent = ""; const w = $("warns"); w.textContent = ""; w.append(el("li", "", typeof d.detail === "string" ? d.detail : "Check the form: every topic needs a name and the exam must be in the future.")); return; }
   render(d);
+  } catch (e) { const w = $("warns"); w.textContent = ""; w.append(el("li", "", "Could not plan your runway. Try again.")); }
 }
 $("add").addEventListener("click", () => addTopic());
 $("form").addEventListener("submit", (e) => { e.preventDefault(); plan(); });
 (async () => {
+  try {
   const s = await (await fetch("/sample")).json();
   $("exam_date").value = s.exam_date; $("hours").value = s.hours_per_day; $("sleep").value = s.sleep_hours;
   s.topics.forEach(addTopic); plan();
+  } catch (e) { const w = $("warns"); w.textContent = ""; w.append(el("li", "", "Could not load the sample topics. Add your own topics and press Plan my runway.")); }
 })();
 </script>
 </body>
