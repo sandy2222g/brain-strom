@@ -522,6 +522,7 @@ async function runSwapChecks(staffId, day, others) {
         r.violations.slice(0, 3).map((v) => "<p>" + esc(v.message) + "</p>").join("");
     } catch (e) {
       if (e.name !== "AbortError" && el) { el.className = "res wait"; el.textContent = "Not checked"; }
+      if (e.name !== "AbortError" && det) det.textContent = "Could not check this swap. Try again.";
     }
   }));
 }

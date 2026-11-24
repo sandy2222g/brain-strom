@@ -117,3 +117,7 @@ def test_swap_check_validation():
 def test_index_page_is_served():
     r = client.get("/")
     assert r.status_code == 200 and "Roster board" in r.text
+
+
+def test_index_explains_failed_swap_check():
+    assert "Could not check this swap" in client.get("/").text
