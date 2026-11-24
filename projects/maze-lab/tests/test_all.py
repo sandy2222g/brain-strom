@@ -78,3 +78,9 @@ def test_api():
     assert c.get("/maze", params={"algorithm": "x"}).status_code == 422
     assert c.get("/maze", params={"width": 99}).status_code == 422
     assert len(c.get("/compare").json()["rows"]) == 3 and c.get("/").status_code == 200
+
+
+def test_index_has_error_texts_and_phone_table_rule():
+    page = TestClient(app).get("/").text
+    assert "Could not draw the maze" in page and "Could not load the comparison" in page
+    assert 'role="img"' in page and 'aria-live="polite"' in page and "max-width:480px" in page
