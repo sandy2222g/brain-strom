@@ -75,3 +75,11 @@ def test_api():
 def test_api_validation():
     bad = {"items": [{"name": "x", "unit_cost": 1, "sales": [{"price": 2, "units": 3}]}]}
     assert c.post("/price", json=bad).status_code == 422
+
+
+def test_index_mentions_range_limit():
+    assert "top of the range you tried" in c.get("/").text
+
+
+def test_index_has_error_text():
+    assert "Could not load prices" in c.get("/").text
