@@ -41,7 +41,7 @@ About 134 projects, each on its own branch from `main`, each with README (proble
 | Unbeatable Tic-Tac-Toe | tictactoe-minimax | 9 pass | builds, /health ok locally | green | yes | no | deploy needs owner account |
 | PageRank Lab | pagerank-lab | 8 pass | builds, /health ok locally | green | yes | no | deploy needs owner account |
 | Countdown Solver | countdown-solver | 9 pass | builds, /health ok locally | green | yes | no | deploy needs owner account |
-| A/B Test Judge | ab-test-judge | 7 pass | builds, /health ok locally | CI not checked at stop | yes | no | deploy needs owner account |
+| A/B Test Judge | ab-test-judge | 7 pass | builds, /health ok locally | green | yes | no | deploy needs owner account |
 
 Earlier projects have the same row in their own branch's REPORT.md. All branch names on the remote are listed at the end of this file.
 
@@ -61,7 +61,7 @@ Nothing. Deploying to Render or Hugging Face Spaces needs the owner's account; e
 
 ## Next steps
 1. Deploy the strongest projects (for example password-strength-coach, ab-test-judge, rate-limiter-lab, cache-policy-lab) to Render or Hugging Face Spaces and add the live links to their READMEs.
-2. Check CI on ab-test-judge.
+2. (Done) CI on ab-test-judge is green (run 180).
 3. Fix stale pyproject descriptions on three early branches (table-seating-planner, bake-sale-pricer, timetable-builder).
 4. Pick the 5 to 8 best projects for the resume instead of listing all of them.
 
@@ -201,3 +201,6 @@ Nothing. Deploying to Render or Hugging Face Spaces needs the owner's account; e
 - weekly-menu-planner
 - word-hive-solver
 - word-ladder-solver
+
+## Timing note
+All 134 project branches were pushed on Nov 17, 2026 (well before the Nov 18 07:30 IST stop). Only this final report section was pushed late, on Nov 24, because the repo rename (brain-strome to brain-strom) blocked pushes until the new name was added to the session. No project work was done after the stop time.
