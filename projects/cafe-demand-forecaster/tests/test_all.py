@@ -84,3 +84,15 @@ def test_api():
     assert c.get("/evaluation").json()["holdout_days"] == 14
     assert c.post("/plan", json={"last_day": "2026-01-01", "sold": [1, 2, 3]}).status_code == 422
     assert c.get("/").status_code == 200
+
+
+def test_index_has_error_text():
+    assert "Could not load the forecast" in c.get("/").text
+
+
+def test_index_has_dark_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text
+
+
+def test_plan_days_are_a_list():
+    assert 'role="list"' in c.get("/").text
