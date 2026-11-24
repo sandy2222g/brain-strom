@@ -22,11 +22,11 @@ button{min-height:44px;padding:0 20px;background:var(--sow);color:#10231b;border
 <div class="gantt" id="g" aria-live="polite"></div><div class="beds" id="b"></div></main>
 <script>
 const $=i=>document.getElementById(i),day=86400000;
-async function go(){const crops=await (await fetch("/crops")).json();
+async function go(){try{const crops=await (await fetch("/crops")).json();
 const r=await fetch("/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({crops,last_frost:$("lf").value,first_frost:$("ff").value,beds:+$("beds").value})});const d=await r.json();
 if(!r.ok){$("g").textContent=d.detail;return}
 const t0=new Date($("lf").value)-8*7*day,t1=new Date($("ff").value)-0,span=t1-t0;
 $("g").innerHTML=Object.entries(d.plan).map(([n,s])=>`<div class="line"><b>${n}</b><div class="track">${s.map(x=>{const a=(new Date(x.sow)-t0)/span*100,w=(new Date(x.harvest)-new Date(x.sow))/span*100;return `<div class="seg" style="left:${a}%;width:${w}%" title="Sow ${x.sow}, harvest ${x.harvest}"></div>`}).join("")}</div></div>`).join("");
-$("b").innerHTML=d.layout.map((b,i)=>`<div class="bed"><h3>Bed ${i+1}</h3>${b.map(c=>`<span class="chip">${c}</span>`).join("")}</div>`).join("")}
+$("b").innerHTML=d.layout.map((b,i)=>`<div class="bed"><h3>Bed ${i+1}</h3>${b.map(c=>`<span class="chip">${c}</span>`).join("")}</div>`).join("")}catch(e){$("g").textContent="Could not plan the season. Try again.";$("b").innerHTML="";}}
 $("go").onclick=go;go();
 </script></body></html>

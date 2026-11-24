@@ -91,3 +91,7 @@ def test_api_errors():
     swapped = {"crops": ["Peas"], "last_frost": "2026-10-25", "first_frost": "2026-04-20"}
     assert c.post("/plan", json=swapped).status_code == 422
     assert c.get("/").status_code == 200
+
+
+def test_index_has_plan_error_text():
+    assert "Could not plan the season" in c.get("/").text
