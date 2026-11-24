@@ -78,3 +78,9 @@ def test_api():
     a = c.get("/accuracy").json()
     assert a["corrected"]["worst_hours"] < 0.75 < a["mean_only"]["worst_hours"]
     assert c.get("/month", params={"month": 13}).status_code == 422 and c.get("/").status_code == 200
+
+
+def test_index_has_moon_error_texts_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not load the moon phases" in page and "Accuracy figures unavailable right now" in page
+    assert "prefers-color-scheme: dark" in page
