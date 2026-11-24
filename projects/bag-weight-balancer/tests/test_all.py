@@ -77,4 +77,4 @@ def test_index_has_dark_scheme():
 
 
 def test_results_are_announced():
-    assert c.get("/").text.count('role="status"') >= 2
+    assert c.get("/").text.count('role="status"') == 1
