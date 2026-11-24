@@ -69,3 +69,11 @@ def test_api():
     assert c.get("/health").json() == {"status": "ok"}
     j = c.get("/curves").json()
     assert j["loads"][0] == 0.1 and set(j["curves"]) == set(KINDS) and c.get("/").status_code == 200
+
+
+def test_page_shows_error_message_when_curves_fail():
+    assert "Could not load the probe curves" in c.get("/").text
+
+
+def test_page_has_dark_colour_scheme():
+    assert "prefers-color-scheme: dark" in c.get("/").text
