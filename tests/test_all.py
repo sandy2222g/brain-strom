@@ -89,3 +89,8 @@ def test_api_validation():
     bad = {"box_kg": 20, "box_litres": 60, "items": [{"name": "anvil", "kg": 50, "litres": 5}]}
     assert c.post("/pack", json=bad).status_code == 422
     assert c.post("/pack", json={"box_kg": 20, "box_litres": 60, "items": []}).status_code == 422
+
+
+def test_index_has_pack_error_text():
+    assert "Could not pack the boxes" in c.get("/").text
+    assert "if(!R)return" in c.get("/").text

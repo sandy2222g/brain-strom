@@ -26,12 +26,12 @@ ul{list-style:none;margin:6px 0 0;padding:0;font-size:.8rem}li{border-top:1px da
 <script>
 const $=i=>document.getElementById(i);let D,R,cur="optimal";
 const NAMES={next_fit:["In listed order","fill a box, start the next"],first_fit_decreasing:["Biggest first","standard heuristic"],optimal:["Exact search","fewest possible"]};
-function show(){$("tabs").innerHTML=Object.keys(NAMES).map(k=>`<button class="tab" role="tab" aria-selected="${k==cur}" data-k="${k}"><b>${R[k].length}</b>boxes<br><span>${NAMES[k][0]}: ${NAMES[k][1]}</span></button>`).join("");
+function show(){if(!R)return;$("tabs").innerHTML=Object.keys(NAMES).map(k=>`<button class="tab" role="tab" aria-selected="${k==cur}" data-k="${k}"><b>${R[k].length}</b>boxes<br><span>${NAMES[k][0]}: ${NAMES[k][1]}</span></button>`).join("");
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{cur=b.dataset.k;show()});
 $("note").textContent=`Lower bound ${R.lower_bound} boxes (total weight or volume). Exact search ${R.proved_optimal?"proved":"did not prove"} ${R.optimal.length} is the minimum.`;
 $("grid").innerHTML=R[cur].map((b,n)=>`<div class="box"><h3>Box ${n+1}<span>${b.items.length} items</span></h3>
 <div class="lab"><span>weight</span><span>${b.kg.toFixed(1)} / ${D.box_kg} kg</span></div><div class="bar"><i style="width:${Math.min(100,b.kg/D.box_kg*100)}%"></i></div>
 <div class="lab"><span>volume</span><span>${b.litres.toFixed(0)} / ${D.box_litres} L</span></div><div class="bar v"><i style="width:${Math.min(100,b.litres/D.box_litres*100)}%"></i></div>
 <ul>${b.items.map(i=>`<li>${i}</li>`).join("")}</ul></div>`).join("")}
-(async()=>{D=await (await fetch("/sample")).json();R=await (await fetch("/pack",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({box_kg:D.box_kg,box_litres:D.box_litres,items:D.items})})).json();show()})();
+(async()=>{try{D=await (await fetch("/sample")).json();R=await (await fetch("/pack",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({box_kg:D.box_kg,box_litres:D.box_litres,items:D.items})})).json();show()}catch(e){$("note").textContent="Could not pack the boxes. Refresh to try again."}})();
 </script></body></html>
