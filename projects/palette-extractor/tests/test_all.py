@@ -78,3 +78,9 @@ def test_api():
     assert c.post("/palette", files={"file": ("a.txt", b"hello", "text/plain")}).status_code == 422
     assert c.post("/palette", data={"k": "99"}).status_code == 422
     assert c.get("/").status_code == 200
+
+
+def test_index_has_extract_error_text_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not extract the colours" in page
+    assert "prefers-color-scheme: dark" in page
