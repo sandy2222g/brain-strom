@@ -73,3 +73,5 @@ def test_api():
     assert r["best"]["seconds"] <= r["target"] and r["best"]["seconds"] >= r["in_order"]["seconds"]
     assert c.get("/").status_code == 200
     assert c.post("/fit", json={"target_minutes": 0, "songs": []}).status_code == 422
+    page = c.get("/").text
+    assert "Could not fit the playlist" in page and 'id="out" aria-live="polite"' in page

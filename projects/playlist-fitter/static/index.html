@@ -15,10 +15,11 @@ ol{margin:0;padding-left:1.4rem;font-size:.85rem;color:var(--mute)}
 </style></head><body><main>
 <h1>playlist fitter</h1>
 <p id="sub">Fill the drive exactly, no cut-off last song.</p>
-<button id="go">fit the sample trip</button><div class="row" id="out"></div></main>
+<button id="go">fit the sample trip</button><div class="row" id="out" aria-live="polite"></div></main>
 <script>
 const out=document.getElementById("out"),fmt=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
 document.getElementById("go").onclick=async()=>{
+  try{
   const s=await (await fetch("/sample")).json();
   const r=await (await fetch("/fit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(s)})).json();
   document.getElementById("sub").textContent=`Trip length ${fmt(r.target)}.`;
@@ -30,6 +31,7 @@ document.getElementById("go").onclick=async()=>{
     h+=`</div><ol>`;for(const x of p.songs)h+=`<li>${x.title} (${fmt(x.seconds)})</li>`;
     d.innerHTML=h+"</ol>";out.appendChild(d);
   }
+  }catch(e){out.innerHTML="<p>Could not fit the playlist. Try again.</p>"}
 };
 document.getElementById("go").click();
 </script></body></html>
