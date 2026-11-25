@@ -9,15 +9,18 @@ main{max-width:780px;margin:0 auto;padding:30px 16px}h1{margin:0;font-size:1.9re
 .film{background:var(--film);padding:8px 6px;border-radius:6px;display:flex;gap:4px;overflow:hidden;margin-top:6px;border-top:4px dotted #fff3;border-bottom:4px dotted #fff3}
 .f{flex:0 0 auto;width:34px;height:24px;background:var(--blue);border-radius:2px}
 .note{background:#fff;border-left:5px solid var(--blue);padding:10px 14px;margin-top:20px}
+@media (prefers-color-scheme: dark){:root{--bg:#0f1626;--ink:#e7edf8;--blue:#6ea4ff;--mute:#a6b3c9}.note{background:#1a2438}.film{background:#0a1222}}
 </style></head><body><main>
 <h1>Photo album grouper</h1><p id="sub"></p><div id="out"></div><div class="note" id="note"></div></main>
 <script>
 const d=s=>new Date(s).toLocaleString("en-GB",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
 (async()=>{
+  try{
   const s=await (await fetch("/sample")).json();
   const r=await (await fetch("/group",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({photos:s.photos,gap_hours:s.gap_hours})})).json();
   document.getElementById("sub").textContent=`${s.photos.length} photos, new album after a ${s.gap_hours}-hour gap.`;
   document.getElementById("out").innerHTML=r.albums.map((a,i)=>`<div class="album"><div class="hd">Album ${i+1} <span>${d(a.start)} to ${d(a.end)} · ${a.count} ${a.count===1?"photo":"photos"}</span></div><div class="film">${"<div class=f></div>".repeat(a.count)}</div></div>`).join("");
   document.getElementById("note").textContent=`Grouping by calendar day would give ${r.by_day_count} albums and cut the late-night event in two.`;
+  }catch(e){document.getElementById("sub").textContent="Could not group the photos. Refresh to try again."}
 })();
 </script></body></html>

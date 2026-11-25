@@ -58,3 +58,8 @@ def test_api():
     assert len(r["albums"]) == 5 and r["by_day_count"] == 6
     assert c.get("/").status_code == 200
     assert c.post("/group", json={"photos": [], "gap_hours": 4}).status_code == 422
+
+
+def test_index_has_error_text_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not group the photos" in page and "prefers-color-scheme: dark" in page
