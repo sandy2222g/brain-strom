@@ -29,3 +29,6 @@ def test_validation() -> None:
         assert c.post("/schedule", json={"plants": [{**base, "pot_cm": 1}]}).status_code == 422
         assert c.post("/feedback", json={"soil": "soggy"}).status_code == 422
         assert c.post("/schedule", json={"plants": [base], "today": "2026-06-10"}).status_code == 200
+        page = c.get("/").text
+        assert "Could not load the plant list" in page
+        assert "Could not plan the watering" in page and "Could not save the feedback" in page
