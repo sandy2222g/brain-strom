@@ -88,3 +88,7 @@ def test_api():
     q2 = {**q, "soil_moisture": 55, "days_since_watering": 1}
     assert c.get("/predict", params=q2).json()["answer"] == "skip"
     assert c.get("/predict", params={**q, "depth": 99}).status_code == 422 and c.get("/").status_code == 200
+    page = c.get("/").text
+    assert "Could not load the model" in page and "Could not update the answer" in page
+    assert 'aria-label="' in page and 'id="ans" aria-live="polite"' in page
+    assert "prefers-color-scheme: dark" in page
