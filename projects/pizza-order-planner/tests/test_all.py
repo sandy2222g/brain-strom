@@ -76,3 +76,9 @@ def test_api():
     assert c.get("/").status_code == 200
     bad = {"slices_each": 3, "people": {"vegan": 1}, "menu": [item("m", 5, "meat")]}
     assert c.post("/plan", json=bad).status_code == 422
+
+
+def test_index_has_error_text_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not plan the order" in page and "Could not load the menu" in page
+    assert "prefers-color-scheme: dark" in page
