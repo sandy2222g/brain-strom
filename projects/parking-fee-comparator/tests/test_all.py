@@ -64,5 +64,5 @@ def test_api():
 def test_index_has_compare_error_text_and_table_wrapper():
     page = c.get("/").text
     assert "Could not compare the car parks" in page
-    assert "overflow-x:auto" in page
+    assert "max-width:480px" in page
     assert 'id="out" aria-live="polite"' in page

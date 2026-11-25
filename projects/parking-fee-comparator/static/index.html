@@ -11,6 +11,7 @@ table{width:100%;border-collapse:collapse;margin-top:20px;font-family:Arial,sans
 th,td{padding:10px 12px;text-align:right;border-bottom:1px solid #3b4d85}th:first-child,td:first-child{text-align:left}
 th{color:var(--mute);font-weight:normal;text-transform:uppercase;font-size:.8rem}
 td.win{background:var(--accent);color:var(--bg);font-weight:bold}
+@media(max-width:480px){table{font-size:12px}td,th{padding:4px 3px}}
 </style></head><body><main>
 <h1>Car Park Fee Comparator</h1>
 <p>The cheapest car park changes with how long you stay.</p>
@@ -23,7 +24,7 @@ document.getElementById("go").onclick=async()=>{try{
   const names=Object.keys(r.rows[0].fees);
   let h="<table><tr><th>Stay</th>"+names.map(n=>`<th>${n}</th>`).join("")+"</tr>";
   for(const x of r.rows)h+=`<tr><td>${len(x.minutes)}</td>`+names.map(n=>`<td class="${n===x.best?"win":""}">$${x.fees[n].toFixed(2)}</td>`).join("")+"</tr>";
-  out.innerHTML='<div style="overflow-x:auto">'+h+"</table></div>";
+  out.innerHTML=h+"</table>";
 }catch(e){out.textContent="Could not compare the car parks. Try again."}};
 document.getElementById("go").click();
 </script></body></html>
