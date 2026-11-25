@@ -84,3 +84,8 @@ def test_index_has_extract_error_text_and_dark_scheme():
     page = c.get("/").text
     assert "Could not extract the colours" in page
     assert "prefers-color-scheme: dark" in page
+
+
+def test_index_has_minmax_grid_and_right_gutter():
+    page = c.get("/").text
+    assert "minmax(0,1fr) minmax(0,1.2fr)" in page and "padding-right:72px" in page
