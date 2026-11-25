@@ -13,13 +13,14 @@ button{background:var(--accent);color:#10231f;border:0;border-radius:999px;paddi
 .cost{font-size:2.2rem;font-weight:700}.tins{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .tin{background:var(--accent);color:#10231f;border-radius:4px 4px 8px 8px;padding:2px 8px;font:600 13px system-ui}
 .tin.dim{background:#46635a;color:var(--ink)}
+@media (prefers-color-scheme: dark){body{background:#15161c;color:#eceef5}}
 </style></head><body><main>
 <h1>Paint Can Planner</h1>
 <p id="need">How many tins, and which sizes, for the cheapest total?</p>
 <button id="go">Plan the sample job</button><div class="grid" id="out"></div></main>
 <script>
 const out=document.getElementById("out");
-document.getElementById("go").onclick=async()=>{
+document.getElementById("go").onclick=async()=>{try{
   const s=await (await fetch("/sample")).json();
   const r=await (await fetch("/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(s)})).json();
   document.getElementById("need").textContent=`Sample job needs ${r.litres} L of paint.`;
@@ -30,6 +31,6 @@ document.getElementById("go").onclick=async()=>{
     for(const [sz,n] of Object.entries(p.cans))h+=`<span class="tin ${k==="optimal"?"":"dim"}">${n} &times; ${sz} L</span>`;
     d.innerHTML=h+"</div>";out.appendChild(d);
   }
-};
+}catch(e){document.getElementById("need").textContent="Could not plan the paint. Refresh to try again."}};
 document.getElementById("go").click();
 </script></body></html>

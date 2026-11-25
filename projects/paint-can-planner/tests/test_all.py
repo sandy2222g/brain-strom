@@ -84,3 +84,9 @@ def test_api_validation():
         ).status_code
         == 422
     )
+
+
+def test_index_has_paint_error_text_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not plan the paint" in page
+    assert "prefers-color-scheme: dark" in page
