@@ -64,3 +64,10 @@ def test_api():
     assert c.post("/assess", json={"password": ""}).status_code == 422
     assert c.get("/passphrase", params={"words": 5}).json()["entropy_bits"] == 64.6
     assert c.get("/passphrase", params={"words": 0}).status_code == 422 and c.get("/").status_code == 200
+
+
+def test_index_has_error_text_labels_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not check this password" in page and "Passphrase tip unavailable" in page
+    assert 'aria-label="Password to check"' in page and 'id="verdict" aria-live="polite"' in page
+    assert "prefers-color-scheme: dark" in page
