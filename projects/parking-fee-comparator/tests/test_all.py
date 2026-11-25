@@ -59,3 +59,10 @@ def test_api():
     assert [x["best"] for x in r["rows"]] == ["Mall", "Mall", "Mall", "Council", "Council"]
     assert c.get("/").status_code == 200
     assert c.post("/compare", json={"carparks": [], "stays": [30]}).status_code == 422
+
+
+def test_index_has_compare_error_text_and_table_wrapper():
+    page = c.get("/").text
+    assert "Could not compare the car parks" in page
+    assert "overflow-x:auto" in page
+    assert 'id="out" aria-live="polite"' in page

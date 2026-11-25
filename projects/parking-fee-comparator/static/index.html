@@ -14,16 +14,16 @@ td.win{background:var(--accent);color:var(--bg);font-weight:bold}
 </style></head><body><main>
 <h1>Car Park Fee Comparator</h1>
 <p>The cheapest car park changes with how long you stay.</p>
-<button id="go">Compare the sample car parks</button><div id="out"></div></main>
+<button id="go">Compare the sample car parks</button><div id="out" aria-live="polite"></div></main>
 <script>
 const out=document.getElementById("out"),len=m=>m>=60?`${m/60} h`:`${m} min`;
-document.getElementById("go").onclick=async()=>{
+document.getElementById("go").onclick=async()=>{try{
   const s=await (await fetch("/sample")).json();
   const r=await (await fetch("/compare",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(s)})).json();
   const names=Object.keys(r.rows[0].fees);
   let h="<table><tr><th>Stay</th>"+names.map(n=>`<th>${n}</th>`).join("")+"</tr>";
   for(const x of r.rows)h+=`<tr><td>${len(x.minutes)}</td>`+names.map(n=>`<td class="${n===x.best?"win":""}">$${x.fees[n].toFixed(2)}</td>`).join("")+"</tr>";
-  out.innerHTML=h+"</table>";
-};
+  out.innerHTML='<div style="overflow-x:auto">'+h+"</table></div>";
+}catch(e){out.textContent="Could not compare the car parks. Try again."}};
 document.getElementById("go").click();
 </script></body></html>
