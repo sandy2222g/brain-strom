@@ -100,14 +100,18 @@ function show(d) {
 }
 async function build() {
   const body = { arc, minutes: +$("min").value, moods: moods.size ? [...moods] : null, seed: 1 };
-  const r = await fetch("/build", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) }); const d = await r.json();
-  if (!r.ok) { $("count").textContent = d.detail || "Could not build that playlist"; return; } show(d);
+  try {
+    const r = await fetch("/build", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) }); const d = await r.json();
+    if (!r.ok) { $("count").textContent = d.detail || "Could not build that playlist"; return; } show(d);
+  } catch (e) { $("count").textContent = "Could not build the playlist. Try again."; }
 }
 $("go").addEventListener("click", build); $("min").addEventListener("input", () => { $("o-min").textContent = $("min").value + " min"; });
 (async () => {
-  const arcs = Object.keys(await (await fetch("/arcs")).json()); allMoods = Object.keys(await (await fetch("/moods")).json());
-  const draw = () => { chips($("arcs"), arcs, (n) => n === arc, (n) => { arc = n; build(); }); chips($("moods"), allMoods, (n) => moods.has(n), (n) => { moods.has(n) ? moods.delete(n) : moods.add(n); }); };
-  draw(); await build();
+  try {
+    const arcs = Object.keys(await (await fetch("/arcs")).json()); allMoods = Object.keys(await (await fetch("/moods")).json());
+    const draw = () => { chips($("arcs"), arcs, (n) => n === arc, (n) => { arc = n; build(); }); chips($("moods"), allMoods, (n) => moods.has(n), (n) => { moods.has(n) ? moods.delete(n) : moods.add(n); }); };
+    draw(); await build();
+  } catch (e) { $("count").textContent = "Could not load the arc and mood options. Refresh to try again."; }
 })();
 </script>
 </body>

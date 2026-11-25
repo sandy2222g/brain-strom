@@ -25,3 +25,5 @@ def test_custom_points_and_validation() -> None:
         assert c.post("/build", json={"minutes": 2}).status_code == 422
         assert c.post("/build", json={"points": [[0, 2], [1, 0.5]]}).status_code == 422
         assert c.post("/build", json={"moods": ["Calm"], "minutes": 200}).status_code == 422
+        page = c.get("/").text
+        assert "Could not load the arc and mood options" in page and "Could not build the playlist" in page
