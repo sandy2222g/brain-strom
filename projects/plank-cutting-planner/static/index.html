@@ -12,6 +12,7 @@ button{background:var(--ink);color:var(--bg);border:0;padding:.6rem 1.3rem;font:
 .cut{background:var(--wood);border-right:3px solid var(--ink);display:flex;align-items:center;justify-content:center;font:bold 13px sans-serif}
 .plan.win .cut{background:var(--accent);color:#fff}
 .meta{margin-top:6px;color:var(--mute)}
+@media (prefers-color-scheme: dark){:root{--bg:#1f1810;--ink:#f3e6cf;--accent:#e88a4f;--wood:#6b4a24;--mute:#c9b08a}.plan.win .cut{color:#1f1810}}
 </style></head><body><main>
 <h1>Plank Cutting Planner</h1>
 <p id="sub">Which pieces to cut for the most money?</p>
@@ -19,6 +20,7 @@ button{background:var(--ink);color:var(--bg);border:0;padding:.6rem 1.3rem;font:
 <script>
 const out=document.getElementById("out");
 document.getElementById("go").onclick=async()=>{
+  try{
   const s=await (await fetch("/sample")).json();
   const r=await (await fetch("/cut",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(s)})).json();
   document.getElementById("sub").textContent=`${r.length} cm plank.`;
@@ -29,6 +31,7 @@ document.getElementById("go").onclick=async()=>{
     for(const x of p.pieces)h+=`<div class="cut" style="width:${x/r.length*100}%">${x}</div>`;
     d.innerHTML=h+`</div><div class="meta">${p.waste} cm offcut</div>`;out.appendChild(d);
   }
+  }catch(e){out.textContent="Could not plan the cuts. Try again."}
 };
 document.getElementById("go").click();
 </script></body></html>

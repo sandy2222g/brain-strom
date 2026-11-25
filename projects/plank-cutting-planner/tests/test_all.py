@@ -72,3 +72,9 @@ def test_api():
     assert r["best"]["value"] > r["single_size"]["value"] and r["best"]["waste"] >= 0
     assert c.get("/").status_code == 200
     assert c.post("/cut", json={"length": 0, "prices": {}}).status_code == 422
+
+
+def test_index_has_error_text_and_dark_scheme():
+    page = c.get("/").text
+    assert "Could not plan the cuts" in page
+    assert "prefers-color-scheme: dark" in page
