@@ -81,3 +81,4 @@ def test_api():
     assert r["best"]["filled"] == 7 and r["first_come"]["filled"] == 6
     assert c.get("/").status_code == 200
     assert c.post("/match", json={"needs": N, "guests": []}).status_code == 422
+    assert "Could not match the guests and dishes" in c.get("/").text

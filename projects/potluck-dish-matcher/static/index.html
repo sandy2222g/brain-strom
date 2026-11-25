@@ -28,6 +28,7 @@ h1{margin:0;font-size:clamp(1.8rem,6vw,2.4rem);line-height:1.1;font-weight:800}
 </main>
 <script>
 (async()=>{
+  try{
   const s=await (await fetch("/sample")).json();
   const r=await (await fetch("/match",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({needs:s.needs,guests:s.guests})})).json();
   document.getElementById("sub").textContent=`${s.guests.length} guests, ${r.best.slots} dishes needed.`;
@@ -45,5 +46,6 @@ h1{margin:0;font-size:clamp(1.8rem,6vw,2.4rem);line-height:1.1;font-weight:800}
   }
   const f=r.first_come;
   document.getElementById("cmp").textContent=`Matching fills ${r.best.filled} of ${r.best.slots}. Letting each guest take the first dish they can, in order, fills only ${f.filled}: ${f.missing.join(", ")||"none"} left empty while ${f.unassigned_guests.join(", ")||"nobody"} brings nothing.`;
+  }catch(e){document.getElementById("cols").innerHTML="";document.getElementById("cmp").textContent="Could not match the guests and dishes. Refresh to try again."}
 })();
 </script></body></html>
