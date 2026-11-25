@@ -21,10 +21,11 @@ function mark(s){let h=esc(s.text);const sw=s.swaps.map(x=>x.found).sort((a,b)=>
 sw.forEach(f=>{h=h.replace(new RegExp("\\b"+f.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b","i"),m=>`<mark class="sw" title="try: ${s.swaps.find(x=>x.found.toLowerCase()===m.toLowerCase()).use}">${m}</mark>`)});
 return h}
 async function go(){const text=$("t").value;if(!text.trim()){$("o").innerHTML="";$("m").innerHTML="";return}
-const r=await fetch("/review",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text})});const d=await r.json();if(!r.ok){$("o").textContent=d.detail;return}
+try{const r=await fetch("/review",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text})});const d=await r.json();if(!r.ok){$("o").textContent=d.detail;return}
 $("m").innerHTML=`<div class="k"><b>${d.scores.reading_ease}</b><span>${d.label}</span></div><div class="k"><b>${d.scores.grade}</b><span>reading grade</span></div><div class="k"><b>${d.scores.avg_sentence_words}</b><span>words/sentence</span></div>`;
 $("o").innerHTML=d.sentences.map(s=>{const tags=[...(s.long?["long: "+s.words+" words"]:[]),...(s.passive?["passive"]:[]),...s.swaps.map(x=>x.found+" → "+x.use)];
 return `<div class="sent ${s.long||s.passive?"flag":""}">${s.long?`<mark class="lg">${mark(s)}</mark>`:s.passive?`<mark class="pa">${mark(s)}</mark>`:mark(s)}<div class="tags">${tags.join(" · ")}</div></div>`}).join("")}
+catch(e){$("o").textContent="Could not check this text. Try again.";$("m").innerHTML=""}}
 $("t").oninput=()=>{clearTimeout(timer);timer=setTimeout(go,250)};
-fetch("/sample").then(r=>r.json()).then(d=>{$("t").value=d.text;go()});
+fetch("/sample").then(r=>r.json()).then(d=>{$("t").value=d.text;go()}).catch(()=>{$("m").textContent="Sample text unavailable right now."});
 </script></body></html>

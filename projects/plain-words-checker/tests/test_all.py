@@ -93,3 +93,8 @@ def test_api():
 def test_api_validation():
     assert c.post("/review", json={"text": ""}).status_code == 422
     assert c.post("/review", json={"text": "..."}).status_code == 422
+
+
+def test_index_has_error_text():
+    page = c.get("/").text
+    assert "Could not check this text" in page and "Sample text unavailable" in page
