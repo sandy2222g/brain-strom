@@ -71,3 +71,8 @@ def test_index_has_error_text_labels_and_dark_scheme():
     assert "Could not check this password" in page and "Passphrase tip unavailable" in page
     assert 'aria-label="Password to check"' in page and 'id="verdict" aria-live="polite"' in page
     assert "prefers-color-scheme: dark" in page
+
+
+def test_inactive_meter_segments_use_theme_token():
+    page = c.get("/").text
+    assert "var(--seg)" in page and "--seg:#34443d" in page
